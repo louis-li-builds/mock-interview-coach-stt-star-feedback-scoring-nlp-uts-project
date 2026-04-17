@@ -35,31 +35,17 @@ It outputs an interpretable **score breakdown** and **actionable feedback** to h
 > GitHub supports Mermaid rendering in Markdown.
 
 ```mermaid
-flowchart TD
-  U[User] -->|Open web app| FE[Frontend GUI]
-  FE -->|Select question & record audio| FE
-  FE -->|Upload audio + prompt_id| API[Backend API]
+flowchart LR
+  U[User]
+  FE[Frontend GUI]
+  API[Backend API]
+  STT[STT]
+  NLP[NLP scoring]
+  OUT[Score and feedback]
+  DB[(Storage optional)]
 
-  API --> STT[Open-source STT]
-  STT -->|Transcript| API
-
-  API --> NLP[NLP scoring pipeline]
-  NLP --> PRE[Pre-processing]
-  PRE --> STAR[STAR evidence & coverage scoring]
-  PRE --> REL[Prompt relevance (embeddings)]
-  PRE --> KW[Keyword/competency coverage]
-  PRE --> EVID[Measurable evidence detection]
-
-  STAR --> AGG[Score aggregation]
-  REL --> AGG
-  KW --> AGG
-  EVID --> AGG
-  AGG --> FB[Feedback generation]
-
-  API -->|Optional persist| DB[(Storage: SQLite/JSON)]
-  FB --> API
-  API -->|Scores + feedback + highlights| FE
-  FE -->|Display results| U
+  U --> FE --> API --> STT --> API --> NLP --> OUT --> FE --> U
+  API --> DB
 ```
 
 ---

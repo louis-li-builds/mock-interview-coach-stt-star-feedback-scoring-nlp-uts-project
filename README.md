@@ -11,8 +11,6 @@ This file is the **overview** only. Architecture, tech stack, repo layout, and c
 
 ## At-a-glance workflow
 
-> GitHub supports Mermaid rendering in Markdown.
-
 ```mermaid
 flowchart LR
   U[User]

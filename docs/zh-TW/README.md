@@ -18,8 +18,6 @@
 
 ## 系統流程圖（Mermaid）
 
-> GitHub 的 Markdown 支援 Mermaid 渲染。
-
 ```mermaid
 flowchart LR
   U[User]
@@ -36,6 +34,28 @@ flowchart LR
 
 ---
 
+## 系統架構（元件）
+
+### Frontend（Web GUI）
+- 題目選擇
+- 錄音（MediaRecorder / Web Audio API）
+- 結果呈現（總分、子分數拆解、回饋）
+
+### Backend API
+- 接收音訊與題目 metadata
+- 串接 STT + NLP scoring
+- 可選：儲存 session（逐字稿、分數）
+
+### STT（開源）
+- 候選：Whisper / faster-whisper（優先）或 Vosk（較輕量）
+
+### NLP scoring pipeline
+- 前處理：斷句與正規化；可量化證據偵測（數字、時間長度等）
+- 打分訊號：STAR 證據與覆蓋；題目相關度（embeddings）；關鍵字 / 能力項覆蓋
+- 輸出：總分、子分數、回饋文字與證據 highlight
+
+---
+
 ## 專案結構
 
 ```
@@ -45,8 +65,6 @@ NLP-A3/
 ├── .gitignore
 ├── docs/
 │   ├── README.md
-│   ├── ARCHITECTURE.md
-│   ├── DEVELOPMENT.md
 │   ├── en/
 │   │   └── README.md
 │   └── zh-TW/
@@ -90,9 +108,22 @@ NLP-A3/
 - `add STAR scoring module`
 - `refine report methodology section`
 
+### 文件同步（維持乾淨）
+
+- `README.md`：總覽 + 一張流程圖（at-a-glance）
+- `docs/en/README.md` / `docs/zh-TW/README.md`：中英文完整說明要跟實作一致
+- `CONTRIBUTING.md`：協作規範
+- 課程報告：敘述要跟交付內容一致
+
+### 建議里程碑
+
+- MVP：題目 → 錄音 → STT → transcript → 簡單打分 → 回饋 UI
+- 加上 STAR coverage + 量化證據偵測
+- 加上 embedding relevance + ablation 實驗
+- UI polish + 產出 final report + slides
+
 ---
 
-## 其他文件
+## 協作規範
 
-- `docs/ARCHITECTURE.md`：系統元件與介面
-- `docs/DEVELOPMENT.md`：協作與里程碑
+請見 repo 根目錄的 `CONTRIBUTING.md`。

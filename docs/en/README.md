@@ -18,8 +18,6 @@ It outputs an interpretable **score breakdown** and **actionable feedback** to h
 
 ## System workflow diagram
 
-> GitHub supports Mermaid rendering in Markdown.
-
 ```mermaid
 flowchart LR
   U[User]
@@ -36,6 +34,28 @@ flowchart LR
 
 ---
 
+## Architecture (components)
+
+### Frontend (Web GUI)
+- prompt selection
+- audio recording (MediaRecorder / Web Audio API)
+- results visualization (overall score + breakdown + feedback)
+
+### Backend API
+- accept audio + prompt metadata
+- orchestrate STT + NLP scoring
+- optionally persist sessions (transcripts, scores)
+
+### STT (open-source)
+- candidates: Whisper / faster-whisper (preferred) or Vosk (lighter)
+
+### NLP scoring pipeline
+- preprocessing: segmentation & normalization; measurable evidence detection (numbers, durations)
+- scoring signals: STAR evidence & coverage; prompt relevance (embeddings); keyword / competency coverage
+- outputs: overall score, sub-scores, feedback text + evidence highlights
+
+---
+
 ## Repository layout
 
 ```
@@ -45,8 +65,6 @@ NLP-A3/
 ├── .gitignore
 ├── docs/
 │   ├── README.md
-│   ├── ARCHITECTURE.md
-│   ├── DEVELOPMENT.md
 │   ├── en/
 │   │   └── README.md
 │   └── zh-TW/
@@ -90,9 +108,22 @@ NLP-A3/
 - `add STAR scoring module`
 - `refine report methodology section`
 
+### What to keep in sync (doc hygiene)
+
+- `README.md`: overview + at-a-glance workflow diagram
+- `docs/en/README.md` / `docs/zh-TW/README.md`: keep both language guides aligned with the implementation
+- `CONTRIBUTING.md`: collaboration rules
+- course report: keep narrative consistent with what you ship
+
+### Suggested milestones
+
+- MVP: prompt → record → STT → transcript → simple scoring → feedback UI
+- add STAR coverage + measurable evidence detection
+- add prompt relevance (embeddings) + ablation experiments
+- polish UI and produce final report + slides
+
 ---
 
-## Additional docs
+## Contributing
 
-- `docs/ARCHITECTURE.md`: system components and interfaces
-- `docs/DEVELOPMENT.md`: collaboration notes and milestones
+See `CONTRIBUTING.md` in the repository root.

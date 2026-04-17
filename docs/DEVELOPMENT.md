@@ -3,8 +3,9 @@
 ## English
 ### What to keep updated
 - `README.md`: latest high-level description and diagram
+- `docs/en/README.md` / `docs/zh-TW/README.md`: keep the language guides aligned with implementation
 - `docs/ARCHITECTURE.md`: system design changes
-- Report draft (kept internal): ensure the implementation matches the report narrative
+- Course report draft: ensure the implementation matches the report narrative
 
 ### Suggested milestones
 - MVP: prompt → record → STT → transcript → simple scoring → feedback UI
@@ -15,8 +16,9 @@
 ## 中文（台灣）
 ### 需要同步更新的東西
 - `README.md`：專案簡介與 workflow 圖
+- `docs/en/README.md` / `docs/zh-TW/README.md`：中英文說明要跟實作一致
 - `docs/ARCHITECTURE.md`：架構改動要同步
-- report 草稿（內部文件）：實作與報告敘述要一致
+- 課程報告草稿：實作與報告敘述要一致
 
 ### 建議里程碑
 - MVP：題目 → 錄音 → STT → transcript → 簡單打分 → 回饋 UI

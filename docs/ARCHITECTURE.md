@@ -1,5 +1,7 @@
 # Architecture / 系統架構
 
+[Overview (root)](../README.md) · [English guide](en/README.md) · [繁體中文](zh-TW/README.md) · [Docs hub](README.md)
+
 ## Overview
 This project implements a mock interview practice loop:
 1. A user selects a prompt and records an audio answer in the web UI.
@@ -39,5 +41,5 @@ This project implements a mock interview practice loop:
   - feedback text + evidence highlights
 
 ## Diagram
-See the Mermaid diagram in `README.md`.
+See the Mermaid diagram in the repository overview (`README.md`) or the language guides (`docs/en/README.md`, `docs/zh-TW/README.md`).
 

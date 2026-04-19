@@ -16,7 +16,7 @@
 
 ---
 
-## 系統流程圖（Mermaid）
+## 系統流程圖
 
 ```mermaid
 flowchart LR

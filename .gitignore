@@ -18,6 +18,7 @@ build/
 # Secrets
 .env
 .env.*
+!frontend/.env.example
 
 # Internal team docs (explicitly not version-controlled)
 internal-docs/

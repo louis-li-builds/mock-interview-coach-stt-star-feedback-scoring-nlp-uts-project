@@ -36,10 +36,13 @@ export type SessionResult = {
   overallScore: number
   breakdown: ScoreBreakdown[]
   suggestions: string[]
+  /** Set when response comes from backend scoring. */
+  scoreSource?: 'llm' | 'mock'
 }
 
 /** Simulates STT + LLM output for Phase 1 (no backend). */
 export const MOCK_SESSION_RESULT: SessionResult = {
+  scoreSource: 'mock',
   transcript:
     'In my last internship we had two weeks left and the API integration was still failing. I listed the blockers daily, paired with a senior for two afternoons, and we shipped on time with only minor bugs. The team said communication improved after that.',
   overallScore: 72,

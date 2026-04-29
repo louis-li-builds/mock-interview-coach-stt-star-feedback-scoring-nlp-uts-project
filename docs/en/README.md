@@ -81,9 +81,11 @@ NLP-A3/
 ├── README.md
 ├── CONTRIBUTING.md
 ├── .gitignore
-├── frontend/          # Vite + React (Phase 1: staged UI + mock pipeline)
+├── frontend/          # Vite + React (staged UI, mic, API client)
+├── backend/           # FastAPI: /v1/transcribe, /v1/score
 ├── docs/
 │   ├── README.md
+│   ├── MANUAL_TEST.md # manual QA checklist
 │   ├── en/
 │   │   └── README.md
 │   └── zh-TW/
@@ -98,7 +100,7 @@ NLP-A3/
 > Exact versions will be pinned once implementation starts.
 
 - **Frontend**: React + Vite (audio recording via MediaRecorder / Web Audio API)
-- **Backend**: FastAPI (Python) or Express (Node.js)
+- **Backend**: FastAPI (`backend/`, faster-whisper STT; optional OpenAI JSON scoring)
 - **STT (open-source)**: Whisper / faster-whisper (preferred) or Vosk
 - **LLM**: hosted API or local model; structured scores + advice (pin provider/model once implementation starts)
 - **NLP (optional helpers)**:
@@ -114,6 +116,8 @@ cd frontend && npm install && npm run dev
 ```
 
 This is a **mock** path today (simulate record → STT/LLM → feedback). Real microphone + APIs land in Phase 2+.
+
+See [MANUAL_TEST.md](../MANUAL_TEST.md) for a step-by-step QA checklist.
 
 ---
 

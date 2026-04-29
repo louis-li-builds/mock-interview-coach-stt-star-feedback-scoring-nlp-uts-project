@@ -1,0 +1,113 @@
+import json
+import os
+import re
+from typing import Any
+
+from openai import AsyncOpenAI
+
+from .schemas import BreakdownRow, ScoreRequest, ScoreResponse
+
+SYSTEM_PROMPT = """You are an interview coach for behavioural (STAR) questions.
+Given the interview question and the candidate's spoken answer (as transcript), evaluate the answer.
+
+Return ONLY valid JSON with this shape (no markdown fences):
+{
+  "overall_score": <integer 0-100>,
+  "breakdown": [
+    {"label": "STAR coverage", "score": <number>, "max": 25},
+    {"label": "Prompt relevance", "score": <number>, "max": 25},
+    {"label": "Measurable evidence", "score": <number>, "max": 25},
+    {"label": "Clarity & structure", "score": <number>, "max": 25}
+  ],
+  "suggestions": [<3-5 short actionable strings>]
+}
+
+Rules:
+- Scores must be consistent with the transcript; penalise missing Situation/Task/Action/Result signals.
+- Suggestions must be specific to the transcript (quote patterns, not generic platitudes).
+"""
+
+
+def _mock_score(req: ScoreRequest) -> ScoreResponse:
+    t = req.transcript.strip()
+    n = max(len(t), 1)
+    base = min(88, 36 + n // 10)
+    star = min(25, 10 + n // 25)
+    rel = min(25, 12 + (5 if "?" not in t else 0))
+    evi = min(25, 8 + (6 if re.search(r"\d", t) else 0))
+    clr = min(25, 10 + n // 40)
+    breakdown = [
+        BreakdownRow(label="STAR coverage", score=float(star), max=25.0),
+        BreakdownRow(label="Prompt relevance", score=float(rel), max=25.0),
+        BreakdownRow(label="Measurable evidence", score=float(evi), max=25.0),
+        BreakdownRow(label="Clarity & structure", score=float(clr), max=25.0),
+    ]
+    sug = [
+        "Add one concrete metric (date, duration, % improvement) in the Result.",
+        "State Situation and Task in one sentence each before deep diving into Action.",
+        "Close with what you learned or would change next time.",
+    ]
+    if not re.search(r"\d", t):
+        sug.insert(0, "Include at least one number or measurable outcome if possible.")
+    return ScoreResponse(
+        overall_score=int(base),
+        breakdown=breakdown,
+        suggestions=sug[:5],
+        source="mock",
+    )
+
+
+def _parse_score_payload(data: dict[str, Any]) -> ScoreResponse:
+    overall = int(data["overall_score"])
+    rows: list[BreakdownRow] = []
+    for row in data["breakdown"]:
+        rows.append(
+            BreakdownRow(
+                label=str(row["label"]),
+                score=float(row["score"]),
+                max=float(row.get("max", 25)),
+            )
+        )
+    suggestions = [str(s) for s in data["suggestions"]]
+    return ScoreResponse(
+        overall_score=max(0, min(100, overall)),
+        breakdown=rows,
+        suggestions=suggestions,
+        source="llm",
+    )
+
+
+async def score_answer(req: ScoreRequest) -> ScoreResponse:
+    key = os.getenv("OPENAI_API_KEY")
+    if not key:
+        return _mock_score(req)
+
+    model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+    client = AsyncOpenAI(api_key=key)
+    user_payload = {
+        "question_title": req.question_title,
+        "question_body": req.question_body,
+        "transcript": req.transcript,
+    }
+
+    try:
+        completion = await client.chat.completions.create(
+            model=model,
+            temperature=0.2,
+            response_format={"type": "json_object"},
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {
+                    "role": "user",
+                    "content": json.dumps(user_payload, ensure_ascii=False),
+                },
+            ],
+        )
+        raw = completion.choices[0].message.content or "{}"
+        data = json.loads(raw)
+        parsed = _parse_score_payload(data)
+        if len(parsed.breakdown) < 4:
+            raise ValueError("Incomplete breakdown")
+        return parsed
+    except Exception:
+        return _mock_score(req)

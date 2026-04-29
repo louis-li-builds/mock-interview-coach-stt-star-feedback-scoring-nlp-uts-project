@@ -81,9 +81,11 @@ NLP-A3/
 ├── README.md
 ├── CONTRIBUTING.md
 ├── .gitignore
-├── frontend/          # Vite + React（Phase 1：分階段 UI + mock 管線）
+├── frontend/          # Vite + React（分階段 UI、錄音、呼叫 API）
+├── backend/           # FastAPI：/v1/transcribe、/v1/score
 ├── docs/
 │   ├── README.md
+│   ├── MANUAL_TEST.md # 手動測試清單
 │   ├── en/
 │   │   └── README.md
 │   └── zh-TW/
@@ -98,7 +100,7 @@ NLP-A3/
 > 實作開始後會把版本與依賴鎖定。
 
 - **Frontend**：React + Vite（錄音：MediaRecorder / Web Audio API）
-- **Backend**：FastAPI（Python）或 Express（Node.js）
+- **Backend**：FastAPI（`backend/`，faster-whisper STT；可選 OpenAI 結構化打分）
 - **STT（開源）**：Whisper / faster-whisper（優先）或 Vosk
 - **LLM**：API 或本機模型；輸出結構化分數與建議（實作後鎖定供應商與模型）
 - **NLP（可選輔助）**：
@@ -114,6 +116,8 @@ cd frontend && npm install && npm run dev
 ```
 
 目前為 **mock** 錄音完成 → 模擬 STT/LLM → 回饋畫面；真實麥克風與 API 於 Phase 2 起接入。
+
+手動測試步驟見 [MANUAL_TEST.md](../MANUAL_TEST.md)。
 
 ---
 

@@ -32,13 +32,23 @@ Optional: a backend API orchestrates STT and LLM, and may persist sessions (`DB`
 
 ---
 
-## Run the UI (Phase 1 scaffold)
+## Run locally
+
+**Frontend** (Vite dev server; proxies `/api` → port 8000):
 
 ```bash
 cd frontend && npm install && npm run dev
 ```
 
-Opens the staged interview flow with **mock** STT/LLM (no backend yet). See the language guides for full stack notes.
+**Backend** (FastAPI + faster-whisper + optional OpenAI for scoring):
+
+```bash
+cd backend && python3.11 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+With both running, use **Analyze recording** in the UI for real STT. Without `OPENAI_API_KEY`, scoring uses a deterministic mock. **Run demo pipeline** works with the frontend alone. See [docs/MANUAL_TEST.md](docs/MANUAL_TEST.md) for a full checklist.
 
 ---
 

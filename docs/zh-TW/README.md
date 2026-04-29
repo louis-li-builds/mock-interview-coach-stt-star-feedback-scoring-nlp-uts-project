@@ -81,6 +81,7 @@ NLP-A3/
 ├── README.md
 ├── CONTRIBUTING.md
 ├── .gitignore
+├── frontend/          # Vite + React（Phase 1：分階段 UI + mock 管線）
 ├── docs/
 │   ├── README.md
 │   ├── en/
@@ -105,6 +106,14 @@ NLP-A3/
   - embeddings：Sentence-Transformers（小模型），用於相關度對照或 ablation
 - **Storage（可選）**：SQLite / JSON
 - **Compute**：Google Colab（免費額度）做實驗
+
+### 本機跑前端（Phase 1）
+
+```bash
+cd frontend && npm install && npm run dev
+```
+
+目前為 **mock** 錄音完成 → 模擬 STT/LLM → 回饋畫面；真實麥克風與 API 於 Phase 2 起接入。
 
 ---
 

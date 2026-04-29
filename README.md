@@ -32,6 +32,16 @@ Optional: a backend API orchestrates STT and LLM, and may persist sessions (`DB`
 
 ---
 
+## Run the UI (Phase 1 scaffold)
+
+```bash
+cd frontend && npm install && npm run dev
+```
+
+Opens the staged interview flow with **mock** STT/LLM (no backend yet). See the language guides for full stack notes.
+
+---
+
 ## Documentation
 
 | | |

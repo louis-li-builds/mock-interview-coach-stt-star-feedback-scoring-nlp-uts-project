@@ -81,6 +81,7 @@ NLP-A3/
 ├── README.md
 ├── CONTRIBUTING.md
 ├── .gitignore
+├── frontend/          # Vite + React (Phase 1: staged UI + mock pipeline)
 ├── docs/
 │   ├── README.md
 │   ├── en/
@@ -105,6 +106,14 @@ NLP-A3/
   - embeddings: Sentence-Transformers (small model) for relevance baselines or ablation
 - **Storage (optional)**: SQLite / JSON
 - **Compute**: Google Colab (free tier) for experiments
+
+### Run the frontend locally (Phase 1)
+
+```bash
+cd frontend && npm install && npm run dev
+```
+
+This is a **mock** path today (simulate record → STT/LLM → feedback). Real microphone + APIs land in Phase 2+.
 
 ---
 

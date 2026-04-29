@@ -99,7 +99,7 @@ NLP-A3/
 
 > Exact versions will be pinned once implementation starts.
 
-- **Frontend**: React + Vite (audio recording via MediaRecorder / Web Audio API)
+- **Frontend**: React + Vite + **Tailwind CSS v4** (UI integrated from `NLP/A3/ref-figma`; recording via MediaRecorder)
 - **Backend**: FastAPI (`backend/`, faster-whisper STT; optional OpenAI JSON scoring)
 - **STT (open-source)**: Whisper / faster-whisper (preferred) or Vosk
 - **LLM**: hosted API or local model; structured scores + advice (pin provider/model once implementation starts)

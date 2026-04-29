@@ -5,8 +5,13 @@ import {
   shouldUseClientMock,
   transcribeAudio,
 } from './api'
-import { RecordingPanel } from './components/RecordingPanel'
-import { useCameraPreview } from './hooks/useCameraPreview'
+import { FeedbackStep } from './app/components/FeedbackStep'
+import { PreRecordStep } from './app/components/PreRecordStep'
+import { ProcessingStep } from './app/components/ProcessingStep'
+import { ProgressIndicator } from './app/components/ProgressIndicator'
+import { QuestionStep } from './app/components/QuestionStep'
+import { RecordingStep } from './app/components/RecordingStep'
+import { WelcomeStep } from './app/components/WelcomeStep'
 import {
   MOCK_QUESTION,
   STEP_LABELS,
@@ -14,9 +19,17 @@ import {
   type InterviewStep,
   type SessionResult,
 } from './interviewFlow'
-import './App.css'
 
 const INITIAL_STEP: InterviewStep = 'welcome'
+
+const DISPLAY_STEP: Record<InterviewStep, number> = {
+  welcome: 1,
+  prompt: 2,
+  recordPrep: 3,
+  recording: 4,
+  processing: 5,
+  feedback: 6,
+}
 
 export default function App() {
   const [step, setStep] = useState<InterviewStep>(INITIAL_STEP)
@@ -28,8 +41,6 @@ export default function App() {
     'idle' | 'transcribing' | 'scoring'
   >('idle')
   const [processingError, setProcessingError] = useState<string | null>(null)
-  const [cameraWanted, setCameraWanted] = useState(false)
-  const videoRef = useRef<HTMLVideoElement | null>(null)
   const liveBlobRef = useRef<Blob | null>(null)
 
   const currentIndex = STEP_ORDER.indexOf(step)
@@ -74,8 +85,6 @@ export default function App() {
     setProcessingError(null)
     goTo('processing')
   }, [goTo])
-
-  useCameraPreview(step === 'recordPrep' && cameraWanted, videoRef)
 
   useEffect(() => {
     if (step !== 'processing') return
@@ -137,200 +146,82 @@ export default function App() {
     goTo('recording')
   }, [goTo])
 
+  const canShowContinue =
+    step === 'welcome' || step === 'prompt' || step === 'recordPrep'
+
   return (
-    <div className="coach">
-      <header className="coach__header">
-        <p className="coach__brand">NLP A3 — Mock Interview Coach</p>
-        <nav className="coach__steps" aria-label="Interview progress">
-          {STEP_ORDER.map((s, idx) => (
-            <span
-              key={s}
-              className={
-                'coach__stepDot' +
-                (idx === currentIndex ? ' coach__stepDot--active' : '') +
-                (idx < currentIndex ? ' coach__stepDot--done' : '')
-              }
-              title={STEP_LABELS[s]}
+    <div className="min-h-screen bg-background flex flex-col">
+      <div className="max-w-5xl mx-auto w-full flex-1 flex flex-col px-4">
+        <header className="pt-4 pb-2 border-b border-border flex flex-wrap items-center justify-between gap-2">
+          <p className="text-sm text-muted-foreground font-medium">NLP A3 — Mock Interview Coach</p>
+        </header>
+
+        <ProgressIndicator currentStep={DISPLAY_STEP[step]} totalSteps={totalSteps} />
+
+        <div className="py-6 flex-1">
+          {step === 'welcome' ? <WelcomeStep onContinue={() => goTo('prompt')} /> : null}
+          {step === 'prompt' ? (
+            <QuestionStep
+              title={MOCK_QUESTION.title}
+              body={MOCK_QUESTION.body}
+              onContinue={() => goTo('recordPrep')}
             />
-          ))}
-        </nav>
-      </header>
+          ) : null}
+          {step === 'recordPrep' ? <PreRecordStep onContinue={() => goTo('recording')} /> : null}
+          {step === 'recording' ? (
+            <RecordingStep
+              key={sessionKey}
+              onDemo={startProcessingDemo}
+              onSubmitRecording={startProcessingLive}
+            />
+          ) : null}
+          {step === 'processing' ? (
+            <ProcessingStep
+              error={processingError}
+              phase={processingPhase}
+              onRetry={retryProcessing}
+              onBackToRecording={backFromProcessingError}
+            />
+          ) : null}
+          {step === 'feedback' && result ? <FeedbackStep result={result} onRestart={restart} /> : null}
+        </div>
+      </div>
 
-      <main className="coach__main">
-        {step === 'welcome' && (
-          <section className="panel" aria-labelledby="welcome-title">
-            <h1 id="welcome-title">Welcome</h1>
-            <p className="panel__lead">
-              Walk through a short mock interview: question → microphone (optional
-              camera preview) → speech-to-text → LLM scoring → structured feedback.
-            </p>
-            <p className="panel__muted">
-              Use <strong>Analyze recording</strong> with the Python API running for
-              real Whisper + scoring. <strong>Run demo pipeline</strong> works
-              offline. Set <code>VITE_USE_MOCK=true</code> to force the demo path.
-            </p>
-          </section>
-        )}
-
-        {step === 'prompt' && (
-          <section className="panel" aria-labelledby="prompt-title">
-            <h1 id="prompt-title">{MOCK_QUESTION.title}</h1>
-            <p className="panel__question">{MOCK_QUESTION.body}</p>
-          </section>
-        )}
-
-        {step === 'recordPrep' && (
-          <section className="panel" aria-labelledby="prep-title">
-            <h1 id="prep-title">Before you record</h1>
-            <ul className="panel__list">
-              <li>Find a quiet place; aim for about 60–90 seconds of clear speech.</li>
-              <li>
-                Recording uses the <strong>microphone only</strong> (smaller uploads
-                for STT). Camera is preview-only.
-              </li>
-            </ul>
-            <label className="panel__check">
-              <input
-                type="checkbox"
-                checked={cameraWanted}
-                onChange={(e) => setCameraWanted(e.target.checked)}
-              />
-              Show optional camera preview
-            </label>
-            {cameraWanted ? (
-              <div className="panel__videoWrap">
-                <video
-                  ref={videoRef}
-                  className="panel__video"
-                  playsInline
-                  muted
-                  aria-label="Camera preview"
-                />
-              </div>
-            ) : null}
-          </section>
-        )}
-
-        {step === 'recording' ? (
-          <RecordingPanel
-            key={sessionKey}
-            onDemo={startProcessingDemo}
-            onSubmitRecording={startProcessingLive}
-          />
-        ) : null}
-
-        {step === 'processing' && (
-          <section className="panel panel--center" aria-live="polite">
-            {processingError ? (
-              <>
-                <h1>Could not finish processing</h1>
-                <p className="panel__error" role="alert">
-                  {processingError}
-                </p>
-                <p className="panel__muted">
-                  Is the API running on port 8000? Try{' '}
-                  <code>cd backend && uvicorn app.main:app --reload</code> from the
-                  repo root (with dependencies installed).
-                </p>
-                <div className="panel__row">
-                  <button type="button" className="btn" onClick={backFromProcessingError}>
-                    Back to recording
-                  </button>
-                  <button type="button" className="btn btn--primary" onClick={retryProcessing}>
-                    Retry
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <h1>Processing</h1>
-                <p className="panel__lead">
-                  {processingPhase === 'transcribing'
-                    ? 'Transcribing audio (Whisper)…'
-                    : processingPhase === 'scoring'
-                      ? 'Scoring answer (LLM or mock)…'
-                      : 'Preparing…'}
-                </p>
-                <div className="spinner" role="status" aria-label="Loading" />
-              </>
-            )}
-          </section>
-        )}
-
-        {step === 'feedback' && result && (
-          <section className="panel panel--feedback" aria-labelledby="fb-title">
-            <h1 id="fb-title">Your feedback</h1>
-            <p className="panel__badges">
-              <span className="badge">
-                Scoring:{' '}
-                {result.scoreSource === 'llm'
-                  ? 'LLM'
-                  : result.scoreSource === 'mock'
-                    ? 'Mock / offline'
-                    : '—'}
-              </span>
-            </p>
-            <p className="panel__score">
-              Overall <strong>{result.overallScore}</strong>
-              <span className="panel__muted"> / 100</span>
-            </p>
-
-            <h2 className="panel__h2">Score breakdown</h2>
-            <ul className="panel__breakdown">
-              {result.breakdown.map((row) => (
-                <li key={row.label}>
-                  <span>{row.label}</span>
-                  <span>
-                    {Math.round(row.score)}/{row.max}
-                  </span>
-                </li>
-              ))}
-            </ul>
-
-            <h2 className="panel__h2">Transcript</h2>
-            <blockquote className="panel__quote">{result.transcript}</blockquote>
-
-            <details className="panel__details" open>
-              <summary className="panel__detailsSummary">
-                Suggestions ({result.suggestions.length})
-              </summary>
-              <ol className="panel__suggestions">
-                {result.suggestions.map((s) => (
-                  <li key={s}>{s}</li>
-                ))}
-              </ol>
-            </details>
-          </section>
-        )}
-      </main>
-
-      <footer className="coach__footer">
-        <div className="coach__footerInner">
-          <span className="coach__stepLabel">
+      <footer className="sticky bottom-0 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+        <div className="max-w-5xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+          <span className="text-sm text-muted-foreground">
             {STEP_LABELS[step]} ({currentIndex + 1}/{totalSteps})
           </span>
-          <div className="coach__actions">
+          <div className="flex gap-2">
             <button
               type="button"
-              className="btn"
               onClick={goPrev}
               disabled={
                 step === 'welcome' ||
                 (step === 'processing' && !processingError) ||
                 step === 'feedback'
               }
+              className="bg-secondary text-secondary-foreground px-4 py-2 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Back
             </button>
             {step === 'feedback' ? (
-              <button type="button" className="btn btn--primary" onClick={restart}>
+              <button
+                type="button"
+                onClick={restart}
+                className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
+              >
                 Start over
               </button>
-            ) : step === 'recording' || (step === 'processing' && !processingError) ? null : (
-              <button type="button" className="btn btn--primary" onClick={goNext}>
+            ) : canShowContinue ? (
+              <button
+                type="button"
+                onClick={goNext}
+                className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
+              >
                 Continue
               </button>
-            )}
+            ) : null}
           </div>
         </div>
       </footer>

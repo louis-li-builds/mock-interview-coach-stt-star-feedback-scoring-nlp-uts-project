@@ -1,4 +1,5 @@
 import type { SessionResult } from '../../interviewFlow'
+import { HighlightedTranscript } from './HighlightedTranscript'
 
 interface FeedbackStepProps {
   result: SessionResult
@@ -63,7 +64,11 @@ export function FeedbackStep({ result }: FeedbackStepProps) {
 
       <div className="w-full bg-accent/50 border border-border rounded-lg p-6 mb-6">
         <h3 className="mb-3">Transcript</h3>
-        <p className="text-foreground/90 leading-relaxed whitespace-pre-wrap">{result.transcript}</p>
+        <p className="text-muted-foreground text-xs mb-2">
+          Numbers and percentages are highlighted as quick “measurable evidence” cues (not
+          sentence-level alignment with each suggestion).
+        </p>
+        <HighlightedTranscript text={result.transcript} />
       </div>
 
       <details className="w-full bg-card border border-border rounded-lg p-6 mb-4 open">

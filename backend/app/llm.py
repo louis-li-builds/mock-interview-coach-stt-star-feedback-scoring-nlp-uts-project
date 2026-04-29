@@ -27,6 +27,20 @@ Rules:
 - Suggestions must be specific to the transcript (quote patterns, not generic platitudes).
 """
 
+SYSTEM_PROMPT_MINIMAL = """You are an interview coach. Given a question title/body and a candidate transcript, score the answer.
+Return ONLY valid JSON (no markdown) with keys: overall_score (0-100), breakdown (four objects: STAR coverage, Prompt relevance, Measurable evidence, Clarity & structure — each with label, score, max 25), suggestions (3-5 short strings).
+Be strict but concise; same JSON shape as a detailed rubric would produce."""
+
+PROMPT_VARIANT_FULL = "full"
+PROMPT_VARIANT_MINIMAL = "minimal"
+
+
+def _system_prompt() -> str:
+    v = (os.getenv("SCORE_PROMPT_VARIANT") or PROMPT_VARIANT_FULL).strip().lower()
+    if v == PROMPT_VARIANT_MINIMAL:
+        return SYSTEM_PROMPT_MINIMAL
+    return SYSTEM_PROMPT
+
 
 def _mock_score(req: ScoreRequest) -> ScoreResponse:
     t = req.transcript.strip()
@@ -83,7 +97,8 @@ async def score_answer(req: ScoreRequest) -> ScoreResponse:
         return _mock_score(req)
 
     model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
-    client = AsyncOpenAI(api_key=key)
+    timeout = float(os.getenv("OPENAI_TIMEOUT_SECONDS", "90"))
+    client = AsyncOpenAI(api_key=key, timeout=timeout)
     user_payload = {
         "question_title": req.question_title,
         "question_body": req.question_body,
@@ -96,7 +111,7 @@ async def score_answer(req: ScoreRequest) -> ScoreResponse:
             temperature=0.2,
             response_format={"type": "json_object"},
             messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "system", "content": _system_prompt()},
                 {
                     "role": "user",
                     "content": json.dumps(user_payload, ensure_ascii=False),

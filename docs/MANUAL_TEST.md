@@ -7,7 +7,7 @@ Use this after pulling changes or before a demo. **Automated checks:** `cd front
 1. `cd frontend && npm install && npm run dev`
 2. Walk **Welcome → Question → Before you record → Recording**.
 3. Click **Run demo pipeline (no microphone)** → expect **Processing** then **Feedback** with canned transcript and “Scoring: Mock / offline”.
-4. **Start over** returns to Welcome; step dots reset.
+4. In the **footer**, tap **Start over** → returns to Welcome; footer progress dots reset.
 
 ## 2. Microphone + preview
 
@@ -34,13 +34,21 @@ First run may download the **tiny** Whisper model (several hundred MB for larger
 
 ## 4. Failure paths
 
-1. Stop the API → **Analyze recording** → expect an error panel with **Retry** / **Back to recording**.
+1. Stop the API → **Analyze recording** → expect an error message in the main area; use footer **Back to recording** and **Retry** (no duplicate buttons in the panel).
 2. Deny mic permission → expect a clear error string under **Recording**.
 
-## 5. Optional flags
+## 5. Transcript highlights (feedback)
+
+After a successful run, open **Feedback** → transcript numbers / `%` should appear with a light **highlight** (measurable-evidence cue only).
+
+## 6. Optional flags
 
 - `VITE_USE_MOCK=true` in `frontend/.env` → **Analyze recording** still uses the canned demo pipeline (good for UI-only demos).
 
+## 7. Ablation / report prep
+
+See [ABLATION.md](ABLATION.md) for mock vs LLM, prompt variant (`SCORE_PROMPT_VARIANT`), and optional Whisper size comparisons.
+
 ---
 
-When you finish a full pass of sections 1–4, note the date and any regressions in your team log or `internal-docs/ROADMAP.md`.
+When you finish a full pass of sections 1–4 (and 5–7 if relevant), note the date and any regressions in your team log or `internal-docs/ROADMAP.md`.

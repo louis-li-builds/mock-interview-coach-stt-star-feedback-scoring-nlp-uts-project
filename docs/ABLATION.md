@@ -1,0 +1,59 @@
+# Ablation & comparison notes (NLP A3)
+
+Use this for the **course report / methodology** section: what to compare, how to reproduce, and what to record.
+
+## 1. Mock scorer vs LLM (`/v1/score`)
+
+| Condition | Setup | Expected |
+|-----------|--------|----------|
+| **A** | Unset `OPENAI_API_KEY`, restart API | `source` in JSON is `mock`; heuristic scores from transcript length / digits |
+| **B** | Set `OPENAI_API_KEY`, same transcript body | `source` is `llm`; scores follow chat JSON |
+
+**Reproduce (curl example):** save the same JSON body to `payload.json` (adjust strings):
+
+```json
+{
+  "transcript": "We had two weeks left. I paired with a senior and we reduced errors by 20%.",
+  "question_title": "Behavioural (STAR)",
+  "question_body": "Tell me about a deadline."
+}
+```
+
+```bash
+curl -sS -X POST http://127.0.0.1:8000/v1/score \
+  -H 'Content-Type: application/json' \
+  -d @payload.json | jq .
+```
+
+Run twice: once without API key (mock), once with key (LLM). Log **overall_score**, each **breakdown** row, and first **suggestion** for the report.
+
+## 2. Prompt variant (LLM only)
+
+| Variant | Env | Role |
+|---------|-----|------|
+| **Full rubric** | `SCORE_PROMPT_VARIANT=full` (default) | Long STAR-aligned system prompt |
+| **Minimal** | `SCORE_PROMPT_VARIANT=minimal` | Shorter system prompt, same JSON schema |
+
+Restart the API between runs. Compare variance in `overall_score` and suggestion wording on **3–5 fixed transcripts** (short, medium, long; with/without numbers).
+
+## 3. STT model size (optional)
+
+| Model | Env | Trade-off |
+|-------|-----|-----------|
+| `tiny` | `WHISPER_MODEL=tiny` (default) | Fast, lower WER on noisy audio |
+| `base` | `WHISPER_MODEL=base` | Slower download & inference, often better text |
+
+Same audio file → two configs → compare transcript length / obvious word errors (qualitative table in report).
+
+## 4. UI “evidence highlight” (frontend only)
+
+The feedback screen **highlights digits and `%`** in the transcript as a lightweight cue for “measurable evidence”; it does **not** align spans to individual LLM suggestions. State that limitation explicitly in the report if you cite it as an NLP feature.
+
+## 5. What is *not* automated here
+
+- **Final report + slides** — human deliverable.  
+- **Statistical significance** — with few runs, report **qualitative** comparison or simple tables, not p-values unless you run a larger study.
+
+---
+
+**Suggested report table:** rows = transcript id; columns = mock overall, LLM-full overall, LLM-minimal overall, + one-line note on suggestions.

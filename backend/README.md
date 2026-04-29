@@ -33,6 +33,8 @@ Health check: `GET http://127.0.0.1:8000/v1/health`
 | `WHISPER_LANGUAGE` | _(empty)_ | ISO code like `en` to hint the model. |
 | `OPENAI_API_KEY` | _(empty)_ | If unset, `/v1/score` uses built-in mock scoring. |
 | `OPENAI_MODEL` | `gpt-4o-mini` | Chat model for JSON scoring. |
+| `OPENAI_TIMEOUT_SECONDS` | `90` | Client timeout for OpenAI requests. |
+| `SCORE_PROMPT_VARIANT` | `full` | `full` (default STAR-heavy prompt) or `minimal` (shorter prompt; same JSON schema). For ablations see `docs/ABLATION.md`. |
 | `CORS_ALLOW_ORIGINS` | `http://localhost:5173,http://127.0.0.1:5173` | Comma-separated list. |
 
 ## Endpoints

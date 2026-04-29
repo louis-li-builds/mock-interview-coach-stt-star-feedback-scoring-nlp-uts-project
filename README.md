@@ -3,7 +3,7 @@
 **[Full guide (English)](docs/en/README.md)** · **[完整說明（繁體中文）](docs/zh-TW/README.md)** · [Documentation hub](docs/README.md)
 
 **NLP A3** is a course project for **NLP Assessment 3 (Project Development)**.  
-It builds a **mock interview coaching prototype**: speech → **open-source STT** → lightweight NLP scoring → interpretable feedback.
+It builds a **mock interview coaching prototype**: phased **GUI** → speech (mic; optional camera) → **open-source STT** → transcript → **LLM** scoring and suggestions → final feedback stage back to the user.
 
 This file is the **overview** only. Architecture, tech stack, repo layout, and collaboration notes live in the language-specific guides.
 
@@ -11,19 +11,24 @@ This file is the **overview** only. Architecture, tech stack, repo layout, and c
 
 ## At-a-glance workflow
 
+High-level path: **User → GUI (staged flow) → STT → LLM (score + advice) → feedback GUI → User.**
+
 ```mermaid
 flowchart LR
   U[User]
-  FE[Frontend GUI]
-  API[Backend API]
+  G[GUI phases]
   STT[STT]
-  NLP[NLP scoring]
-  OUT[Score and feedback]
-  DB[(Storage optional)]
+  LLM[LLM score and advice]
+  FB[Feedback stage]
 
-  U --> FE --> API --> STT --> API --> NLP --> OUT --> FE --> U
-  API --> DB
+  U <--> G
+  G --> STT
+  STT --> LLM
+  LLM --> FB
+  FB --> G
 ```
+
+Optional: a backend API orchestrates STT and LLM, and may persist sessions (`DB`).
 
 ---
 

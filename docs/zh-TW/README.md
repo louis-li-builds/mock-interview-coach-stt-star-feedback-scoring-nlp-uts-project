@@ -5,14 +5,28 @@
 **NLP A3 — Mock Interview Coach** 是 **NLP 作業三（Project Development）** 的專題倉庫。  
 我們要解決的真實問題是：面試自我練習常常缺少「即時、具體、可執行」的回饋。
 
-本專案是一個 **模擬面試教練原型**：使用者在網頁 UI 以語音回答題目，系統透過 **開源 STT** 將語音轉成文字，再用輕量 NLP 方法評估：
+本專案是一個 **模擬面試教練原型**：使用者在 **分階段 GUI** 中依序看到題目與引導、開啟麥克風（與可選的鏡頭）錄製回答；系統以 **開源 STT** 將語音轉成文字後，將 **逐字稿與題目脈絡** 交給 **LLM** 產出 **分數與文字建議**，並在 **最後一個階段（回饋畫面）** 呈現給使用者。
+
+評估面向仍可比照課程敘述設計（實作上主要由 LLM 依 prompt 涵蓋），例如：
 
 - STAR 結構覆蓋（Situation / Task / Action / Result）
-- 題目相關度（語意相似度）
+- 題目相關度（語意／論述是否扣題）
 - 關鍵字 / 能力項覆蓋
 - 可量化證據（數字、百分比、時間長度等）
 
-最後輸出可解釋的 **分數拆解** 與 **可操作的改進建議**，讓使用者能反覆修正、追蹤進步。
+輸出為可解釋的 **分數拆解** 與 **可操作的改進建議**，讓使用者能反覆修正、追蹤進步。
+
+---
+
+## 使用者歷程（產品行為）
+
+一句話：**User → GUI → STT → LLM → scoring → GUI → User**。
+
+1. **GUI 多階段**：依面試流程分步呈現（例如歡迎、題目說明、錄音前檢查……），使用者主要在網頁上「跟著階段走」。
+2. **錄製**：使用者開啟麥克風（與若需要的鏡頭），完成錄音後交由系統處理。
+3. **STT**：音訊轉成 **文字（transcript）**；是否在畫面上先給使用者確認再送 LLM，可由產品決定。
+4. **LLM**：以 transcript（與題目、STAR 等指令）產出 **結構化分數與建議**（具體 UI 呈現方式可後續定：例如僅結果、或處理中狀態／摘要等）。
+5. **回饋階段**：在最後一個 GUI 階段顯示分數、子項與建議，使用者讀完即完成一輪。
 
 ---
 
@@ -21,38 +35,42 @@
 ```mermaid
 flowchart LR
   U[User]
-  FE[Frontend GUI]
-  API[Backend API]
+  G[GUI 多階段]
   STT[STT]
-  NLP[NLP scoring]
-  OUT[Score and feedback]
-  DB[(Storage optional)]
+  LLM[LLM 打分與建議]
+  FB[回饋階段]
 
-  U --> FE --> API --> STT --> API --> NLP --> OUT --> FE --> U
-  API --> DB
+  U <--> G
+  G --> STT
+  STT --> LLM
+  LLM --> FB
+  FB --> G
 ```
+
+實務上可在 GUI 與 STT／LLM 之間加上 **Backend API** 編排請求、金鑰與可選的 **儲存（逐字稿、分數）**。
 
 ---
 
 ## 系統架構（元件）
 
 ### Frontend（Web GUI）
-- 題目選擇
-- 錄音（MediaRecorder / Web Audio API）
-- 結果呈現（總分、子分數拆解、回饋）
+- **分階段**面試流程（狀態／wizard）
+- 題目或情境選擇（依設計）
+- 麥克風錄音（MediaRecorder / Web Audio API）；鏡頭（getUserMedia）若產品需要
+- **最終階段**：總分、子分數拆解、LLM 建議列表（可搭配逐字稿 highlight）
 
-### Backend API
+### Backend API（建議）
 - 接收音訊與題目 metadata
-- 串接 STT + NLP scoring
+- 串接 **STT** → **LLM**（打分與建議），回傳結構化 JSON 供前端渲染
 - 可選：儲存 session（逐字稿、分數）
 
 ### STT（開源）
 - 候選：Whisper / faster-whisper（優先）或 Vosk（較輕量）
 
-### NLP scoring pipeline
-- 前處理：斷句與正規化；可量化證據偵測（數字、時間長度等）
-- 打分訊號：STAR 證據與覆蓋；題目相關度（embeddings）；關鍵字 / 能力項覆蓋
-- 輸出：總分、子分數、回饋文字與證據 highlight
+### LLM 評分與建議
+- 輸入：題幹／期望能力、transcript；可選前處理（斷句、正規化）
+- 輸出：建議以 **結構化格式**（例如 JSON：各維度分數、短評、改進重點）便於 UI 與報告
+- 可選輔助：規則或 embedding 作對照／ablation（與課程實驗敘述一致即可）
 
 ---
 
@@ -81,9 +99,10 @@ NLP-A3/
 - **Frontend**：React + Vite（錄音：MediaRecorder / Web Audio API）
 - **Backend**：FastAPI（Python）或 Express（Node.js）
 - **STT（開源）**：Whisper / faster-whisper（優先）或 Vosk
-- **NLP**：
+- **LLM**：API 或本機模型；輸出結構化分數與建議（實作後鎖定供應商與模型）
+- **NLP（可選輔助）**：
   - 前處理：regex + 輕量斷句 / tokenization
-  - embeddings：Sentence-Transformers（小模型）
+  - embeddings：Sentence-Transformers（小模型），用於相關度對照或 ablation
 - **Storage（可選）**：SQLite / JSON
 - **Compute**：Google Colab（免費額度）做實驗
 
@@ -115,12 +134,11 @@ NLP-A3/
 - `CONTRIBUTING.md`：協作規範
 - 課程報告：敘述要跟交付內容一致
 
-### 建議里程碑
+### 建議里程碑（與端到端流程對齊）
 
-- MVP：題目 → 錄音 → STT → transcript → 簡單打分 → 回饋 UI
-- 加上 STAR coverage + 量化證據偵測
-- 加上 embedding relevance + ablation 實驗
-- UI polish + 產出 final report + slides
+- **MVP**：GUI 分階段 → 錄音 → STT → transcript → **LLM** 打分與建議 → 最終回饋畫面
+- **加深**：STAR／量化證據等維度在 prompt 或後處理中強化；可選 embedding 對照 + ablation
+- **收尾**：UI polish、鏡頭（若需要）、final report + slides
 
 ---
 

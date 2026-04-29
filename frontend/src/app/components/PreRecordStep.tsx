@@ -1,10 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
-interface PreRecordStepProps {
-  onContinue: () => void
-}
-
-export function PreRecordStep({ onContinue }: PreRecordStepProps) {
+export function PreRecordStep() {
   const [showCamera, setShowCamera] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
 
@@ -80,13 +76,9 @@ export function PreRecordStep({ onContinue }: PreRecordStepProps) {
         ) : null}
       </div>
 
-      <button
-        type="button"
-        onClick={onContinue}
-        className="bg-primary text-primary-foreground px-8 py-3 rounded-lg hover:opacity-90 transition-opacity"
-      >
-        Continue to recording
-      </button>
+      <p className="text-muted-foreground text-sm text-center">
+        When you are ready, tap <strong>Continue</strong> below to open the microphone screen.
+      </p>
     </div>
   )
 }

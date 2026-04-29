@@ -2,7 +2,6 @@ import type { SessionResult } from '../../interviewFlow'
 
 interface FeedbackStepProps {
   result: SessionResult
-  onRestart: () => void
 }
 
 function scoreColor(score: number, max: number): string {
@@ -18,7 +17,7 @@ function overallColor(score: number): string {
   return 'text-destructive'
 }
 
-export function FeedbackStep({ result, onRestart }: FeedbackStepProps) {
+export function FeedbackStep({ result }: FeedbackStepProps) {
   const sourceLabel =
     result.scoreSource === 'llm'
       ? 'LLM'
@@ -67,7 +66,7 @@ export function FeedbackStep({ result, onRestart }: FeedbackStepProps) {
         <p className="text-foreground/90 leading-relaxed whitespace-pre-wrap">{result.transcript}</p>
       </div>
 
-      <details className="w-full bg-card border border-border rounded-lg p-6 mb-8 open">
+      <details className="w-full bg-card border border-border rounded-lg p-6 mb-4 open">
         <summary className="cursor-pointer font-medium text-foreground mb-2">
           Suggestions ({result.suggestions.length})
         </summary>
@@ -80,13 +79,9 @@ export function FeedbackStep({ result, onRestart }: FeedbackStepProps) {
         </ol>
       </details>
 
-      <button
-        type="button"
-        onClick={onRestart}
-        className="bg-primary text-primary-foreground px-8 py-3 rounded-lg hover:opacity-90 transition-opacity"
-      >
-        Start over
-      </button>
+      <p className="text-muted-foreground text-sm text-center">
+        Tap <strong>Start over</strong> below to practice again.
+      </p>
     </div>
   )
 }

@@ -1,13 +1,12 @@
 interface QuestionStepProps {
   title: string
   body: string
-  onContinue: () => void
 }
 
-export function QuestionStep({ title, body, onContinue }: QuestionStepProps) {
+export function QuestionStep({ title, body }: QuestionStepProps) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[500px] px-6 max-w-3xl mx-auto">
-      <div className="w-full bg-card border border-border rounded-lg p-8 mb-8">
+      <div className="w-full bg-card border border-border rounded-lg p-8">
         <div className="text-muted-foreground mb-3">Behavioural question</div>
         <h2 className="mb-6">{title}</h2>
         <div className="bg-accent/30 rounded-lg p-6 leading-relaxed text-foreground/90">
@@ -32,13 +31,7 @@ export function QuestionStep({ title, body, onContinue }: QuestionStepProps) {
         </div>
       </div>
 
-      <button
-        type="button"
-        onClick={onContinue}
-        className="bg-primary text-primary-foreground px-8 py-3 rounded-lg hover:opacity-90 transition-opacity"
-      >
-        Continue
-      </button>
+      <p className="text-muted-foreground text-sm mt-8">Use <strong>Continue</strong> below when you are ready.</p>
     </div>
   )
 }

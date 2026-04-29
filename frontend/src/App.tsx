@@ -8,7 +8,6 @@ import {
 import { FeedbackStep } from './app/components/FeedbackStep'
 import { PreRecordStep } from './app/components/PreRecordStep'
 import { ProcessingStep } from './app/components/ProcessingStep'
-import { ProgressIndicator } from './app/components/ProgressIndicator'
 import { QuestionStep } from './app/components/QuestionStep'
 import { RecordingStep } from './app/components/RecordingStep'
 import { WelcomeStep } from './app/components/WelcomeStep'
@@ -22,13 +21,25 @@ import {
 
 const INITIAL_STEP: InterviewStep = 'welcome'
 
-const DISPLAY_STEP: Record<InterviewStep, number> = {
-  welcome: 1,
-  prompt: 2,
-  recordPrep: 3,
-  recording: 4,
-  processing: 5,
-  feedback: 6,
+function FooterProgressDots({
+  currentIndex,
+  total,
+}: {
+  currentIndex: number
+  total: number
+}) {
+  return (
+    <span className="flex gap-1.5 items-center shrink-0" aria-hidden>
+      {Array.from({ length: total }).map((_, i) => (
+        <span
+          key={i}
+          className={`h-1.5 w-1.5 rounded-full transition-colors ${
+            i <= currentIndex ? 'bg-primary' : 'bg-border'
+          }`}
+        />
+      ))}
+    </span>
+  )
 }
 
 export default function App() {
@@ -149,25 +160,32 @@ export default function App() {
   const canShowContinue =
     step === 'welcome' || step === 'prompt' || step === 'recordPrep'
 
+  const processingFailed = step === 'processing' && processingError
+
+  const handleFooterBack = useCallback(() => {
+    if (processingFailed) {
+      backFromProcessingError()
+    } else {
+      goPrev()
+    }
+  }, [backFromProcessingError, goPrev, processingFailed])
+
+  const footerBackDisabled =
+    step === 'welcome' || (step === 'processing' && !processingError) || step === 'feedback'
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <div className="max-w-5xl mx-auto w-full flex-1 flex flex-col px-4">
+      <div className="max-w-5xl mx-auto w-full flex-1 flex flex-col px-4 pb-28">
         <header className="pt-4 pb-2 border-b border-border flex flex-wrap items-center justify-between gap-2">
           <p className="text-sm text-muted-foreground font-medium">NLP A3 — Mock Interview Coach</p>
         </header>
 
-        <ProgressIndicator currentStep={DISPLAY_STEP[step]} totalSteps={totalSteps} />
-
         <div className="py-6 flex-1">
-          {step === 'welcome' ? <WelcomeStep onContinue={() => goTo('prompt')} /> : null}
+          {step === 'welcome' ? <WelcomeStep /> : null}
           {step === 'prompt' ? (
-            <QuestionStep
-              title={MOCK_QUESTION.title}
-              body={MOCK_QUESTION.body}
-              onContinue={() => goTo('recordPrep')}
-            />
+            <QuestionStep title={MOCK_QUESTION.title} body={MOCK_QUESTION.body} />
           ) : null}
-          {step === 'recordPrep' ? <PreRecordStep onContinue={() => goTo('recording')} /> : null}
+          {step === 'recordPrep' ? <PreRecordStep /> : null}
           {step === 'recording' ? (
             <RecordingStep
               key={sessionKey}
@@ -176,35 +194,38 @@ export default function App() {
             />
           ) : null}
           {step === 'processing' ? (
-            <ProcessingStep
-              error={processingError}
-              phase={processingPhase}
-              onRetry={retryProcessing}
-              onBackToRecording={backFromProcessingError}
-            />
+            <ProcessingStep error={processingError} phase={processingPhase} />
           ) : null}
-          {step === 'feedback' && result ? <FeedbackStep result={result} onRestart={restart} /> : null}
+          {step === 'feedback' && result ? <FeedbackStep result={result} /> : null}
         </div>
       </div>
 
-      <footer className="sticky bottom-0 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+      <footer className="sticky bottom-0 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 z-10">
         <div className="max-w-5xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
-          <span className="text-sm text-muted-foreground">
-            {STEP_LABELS[step]} ({currentIndex + 1}/{totalSteps})
-          </span>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-3 min-w-0">
+            <FooterProgressDots currentIndex={currentIndex} total={totalSteps} />
+            <span className="text-sm text-muted-foreground truncate">
+              {STEP_LABELS[step]} ({currentIndex + 1}/{totalSteps})
+            </span>
+          </div>
+          <div className="flex gap-2 shrink-0">
             <button
               type="button"
-              onClick={goPrev}
-              disabled={
-                step === 'welcome' ||
-                (step === 'processing' && !processingError) ||
-                step === 'feedback'
-              }
+              onClick={handleFooterBack}
+              disabled={footerBackDisabled}
               className="bg-secondary text-secondary-foreground px-4 py-2 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              Back
+              {processingFailed ? 'Back to recording' : 'Back'}
             </button>
+            {processingFailed ? (
+              <button
+                type="button"
+                onClick={retryProcessing}
+                className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
+              >
+                Retry
+              </button>
+            ) : null}
             {step === 'feedback' ? (
               <button
                 type="button"

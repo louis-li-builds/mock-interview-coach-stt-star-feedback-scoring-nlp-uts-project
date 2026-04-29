@@ -1,16 +1,9 @@
 interface ProcessingStepProps {
   error: string | null
   phase: 'idle' | 'transcribing' | 'scoring'
-  onRetry: () => void
-  onBackToRecording: () => void
 }
 
-export function ProcessingStep({
-  error,
-  phase,
-  onRetry,
-  onBackToRecording,
-}: ProcessingStepProps) {
+export function ProcessingStep({ error, phase }: ProcessingStepProps) {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[500px] px-6 max-w-xl mx-auto text-center">
@@ -18,28 +11,15 @@ export function ProcessingStep({
         <p className="text-destructive mb-4" role="alert">
           {error}
         </p>
-        <p className="text-muted-foreground mb-6 text-sm leading-relaxed">
+        <p className="text-muted-foreground text-sm leading-relaxed">
           Is the API on port 8000? From repo root:{' '}
           <code className="bg-muted px-1.5 py-0.5 rounded text-xs">
             cd backend && uvicorn app.main:app --reload
           </code>
         </p>
-        <div className="flex gap-3 flex-wrap justify-center">
-          <button
-            type="button"
-            onClick={onBackToRecording}
-            className="bg-secondary text-secondary-foreground px-6 py-3 rounded-lg hover:opacity-90 transition-opacity"
-          >
-            Back to recording
-          </button>
-          <button
-            type="button"
-            onClick={onRetry}
-            className="bg-primary text-primary-foreground px-8 py-3 rounded-lg hover:opacity-90 transition-opacity"
-          >
-            Retry
-          </button>
-        </div>
+        <p className="text-muted-foreground text-sm mt-6">
+          Use <strong>Back to recording</strong> or <strong>Retry</strong> in the bar below.
+        </p>
       </div>
     )
   }

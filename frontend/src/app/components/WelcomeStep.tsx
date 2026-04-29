@@ -1,8 +1,4 @@
-interface WelcomeStepProps {
-  onContinue: () => void
-}
-
-export function WelcomeStep({ onContinue }: WelcomeStepProps) {
+export function WelcomeStep() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[500px] px-6 text-center max-w-2xl mx-auto">
       <p className="text-muted-foreground text-sm mb-2">NLP A3</p>
@@ -14,7 +10,7 @@ export function WelcomeStep({ onContinue }: WelcomeStepProps) {
         without a mic.
       </p>
 
-      <div className="bg-accent/50 rounded-lg p-6 mb-8 w-full">
+      <div className="bg-accent/50 rounded-lg p-6 w-full">
         <h3 className="mb-3">What happens next</h3>
         <ol className="text-left space-y-2 text-muted-foreground">
           <li className="flex gap-3">
@@ -36,13 +32,7 @@ export function WelcomeStep({ onContinue }: WelcomeStepProps) {
         </ol>
       </div>
 
-      <button
-        type="button"
-        onClick={onContinue}
-        className="bg-primary text-primary-foreground px-8 py-3 rounded-lg hover:opacity-90 transition-opacity"
-      >
-        Continue
-      </button>
+      <p className="text-muted-foreground text-sm mt-8">Use <strong>Continue</strong> in the bar below.</p>
     </div>
   )
 }

@@ -6,7 +6,7 @@ Use this for the **course report / methodology** section: what to compare, how t
 
 | Condition | Setup | Expected |
 |-----------|--------|----------|
-| **A** | Unset `OPENAI_API_KEY`, restart API | `source` in JSON is `mock`; heuristic scores from transcript length / digits |
+| **A** | Unset `OPENAI_API_KEY`, restart API | `source` in JSON is `mock`; heuristic scores (exact formulas: [SCORING.md](SCORING.md)) |
 | **B** | Set `OPENAI_API_KEY`, same transcript body | `source` is `llm`; scores follow chat JSON |
 
 **Reproduce (curl example):** save the same JSON body to `payload.json` (adjust strings):
@@ -57,3 +57,7 @@ The feedback screen **highlights digits and `%`** in the transcript as a lightwe
 ---
 
 **Suggested report table:** rows = transcript id; columns = mock overall, LLM-full overall, LLM-minimal overall, + one-line note on suggestions.
+
+### Reproducible batch scoring (fixed transcripts → CSV)
+
+The sibling folder **`NLP-A3-exp/`** (repo root, next to `NLP-A3/`) contains **`data/samples.jsonl`** and **`scripts/run_score_batch.py`** to call `POST /v1/score` for every sample and write **`results/score_run.csv`**. Use it for report tables under mock vs LLM conditions (restart API between runs). See [`NLP-A3-exp/README.md`](../../NLP-A3-exp/README.md) from the monorepo root or open that path in the workspace.

@@ -1,3 +1,5 @@
+"""faster-whisper STT. Canonical doc: ``docs/STT.md``."""
+
 import asyncio
 import os
 from functools import lru_cache

@@ -29,7 +29,7 @@ First run may download the **tiny** Whisper model (several hundred MB for larger
 1. Keep `npm run dev` (default `VITE_API_BASE_URL=/api` proxy).
 2. Complete a real recording → **Analyze recording**.
 3. Expect **Transcribing** then **Scoring**, then feedback with **your** transcript (approximate) and breakdown.
-4. With **`OPENAI_API_KEY` unset**, scoring badge stays **Mock / offline** (heuristic scorer).
+4. With **`OPENAI_API_KEY` unset**, scoring badge stays **Mock / offline** (heuristic scorer — see [SCORING.md](SCORING.md)).
 5. With **`OPENAI_API_KEY` set** (and network), badge **LLM** and suggestions should match the transcript more closely.
 
 ## 4. Failure paths
@@ -47,7 +47,8 @@ After a successful run, open **Feedback** → transcript numbers / `%` should ap
 
 ## 7. Ablation / report prep
 
-See [ABLATION.md](ABLATION.md) for mock vs LLM, prompt variant (`SCORE_PROMPT_VARIANT`), and optional Whisper size comparisons.
+- **Scoring design (canonical):** [SCORING.md](SCORING.md) · **STT:** [STT.md](STT.md)
+- [ABLATION.md](ABLATION.md) — mock vs LLM, prompt variant (`SCORE_PROMPT_VARIANT`), optional Whisper size; batch CSV via `NLP-A3-exp/` if present.
 
 ---
 

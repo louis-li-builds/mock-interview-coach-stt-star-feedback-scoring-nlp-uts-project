@@ -1,3 +1,5 @@
+"""Scoring: OpenAI JSON path + deterministic mock fallback. Canonical doc: ``docs/SCORING.md``."""
+
 import json
 import os
 import re

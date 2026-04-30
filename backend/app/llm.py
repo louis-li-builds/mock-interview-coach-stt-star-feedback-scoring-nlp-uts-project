@@ -9,6 +9,10 @@ from openai import AsyncOpenAI
 
 from .schemas import BreakdownRow, ScoreRequest, ScoreResponse
 
+def _log_llm_event(msg: str) -> None:
+    # Keep logging minimal and never include secrets.
+    print(f"[llm] {msg}")
+
 SYSTEM_PROMPT = """You are an interview coach for behavioural (STAR) questions.
 Given the interview question and the candidate's spoken answer (as transcript), evaluate the answer.
 
@@ -102,6 +106,7 @@ async def score_answer(req: ScoreRequest) -> ScoreResponse:
 
     model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
     timeout = float(os.getenv("OPENAI_TIMEOUT_SECONDS", "90"))
+    _log_llm_event(f"Using OpenAI model={model} timeout={timeout}s")
     client = AsyncOpenAI(api_key=key, timeout=timeout)
     user_payload = {
         "question_title": req.question_title,
@@ -128,5 +133,8 @@ async def score_answer(req: ScoreRequest) -> ScoreResponse:
         if len(parsed.breakdown) < 4:
             raise ValueError("Incomplete breakdown")
         return parsed
-    except Exception:
+    except Exception as exc:
+        _log_llm_event(
+            f"LLM scoring failed, falling back to mock: {type(exc).__name__}: {exc}"
+        )
         return _mock_score(req)

@@ -57,15 +57,11 @@ export async function transcribeAudio(blob: Blob): Promise<string> {
 export async function scoreAnswer(
   transcript: string,
   question = MOCK_QUESTION,
-  opts?: { forceMock?: boolean; apiKey?: string },
+  opts?: { forceMock?: boolean },
 ): Promise<Pick<SessionResult, 'overallScore' | 'breakdown' | 'suggestions' | 'scoreSource'>> {
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-  const apiKey = opts?.apiKey?.trim()
-  if (apiKey) headers['x-openai-api-key'] = apiKey
-
   const res = await fetch(`${API_BASE}/v1/score`, {
     method: 'POST',
-    headers,
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       transcript,
       question_title: question.title,

@@ -4,8 +4,6 @@ import { useAudioRecorder } from '../../hooks/useAudioRecorder'
 interface RecordingStepProps {
   forceMockScoring: boolean
   onForceMockScoringChange: (value: boolean) => void
-  userOpenAiKey: string
-  onUserOpenAiKeyChange: (value: string) => void
   onDemo: () => void
   onSubmitRecording: (blob: Blob) => void
 }
@@ -13,8 +11,6 @@ interface RecordingStepProps {
 export function RecordingStep({
   forceMockScoring,
   onForceMockScoringChange,
-  userOpenAiKey,
-  onUserOpenAiKeyChange,
   onDemo,
   onSubmitRecording,
 }: RecordingStepProps) {
@@ -72,39 +68,6 @@ export function RecordingStep({
           </label>
         </div>
       </fieldset>
-
-      <div className="mb-6 w-full max-w-xl mx-auto border border-border rounded-lg p-4 bg-card">
-        <div className="flex items-center justify-between gap-3 mb-2">
-          <div className="text-sm font-medium">OpenAI API key (optional)</div>
-          <button
-            type="button"
-            onClick={() => onUserOpenAiKeyChange('')}
-            className="text-xs text-muted-foreground hover:underline"
-            disabled={!userOpenAiKey}
-            aria-disabled={!userOpenAiKey}
-          >
-            Clear
-          </button>
-        </div>
-        <p className="text-xs text-muted-foreground mb-3">
-          If provided, the browser sends this key to the local backend via the request header{' '}
-          <code className="font-mono">x-openai-api-key</code> for scoring only. It is stored only in
-          this page state (not written to disk by the app).
-        </p>
-        <input
-          type="password"
-          inputMode="text"
-          autoComplete="off"
-          spellCheck={false}
-          placeholder="sk-..."
-          value={userOpenAiKey}
-          onChange={(e) => onUserOpenAiKeyChange(e.target.value)}
-          className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm font-mono"
-        />
-        <p className="text-xs text-muted-foreground mt-2">
-          Tip: if you choose <strong>Mock only</strong>, the server will ignore the key.
-        </p>
-      </div>
 
       {recorder.error ? (
         <p className="text-destructive mb-4 max-w-lg text-center" role="alert">

@@ -93,12 +93,10 @@ def _parse_score_payload(data: dict[str, Any]) -> ScoreResponse:
     )
 
 
-async def score_answer(
-    req: ScoreRequest, api_key_override: str | None = None
-) -> ScoreResponse:
+async def score_answer(req: ScoreRequest) -> ScoreResponse:
     if req.force_mock:
         return _mock_score(req)
-    key = (api_key_override or "").strip() or os.getenv("OPENAI_API_KEY")
+    key = os.getenv("OPENAI_API_KEY")
     if not key:
         return _mock_score(req)
 

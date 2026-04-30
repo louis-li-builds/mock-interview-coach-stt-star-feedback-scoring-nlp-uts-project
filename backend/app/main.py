@@ -2,7 +2,7 @@ import os
 import tempfile
 from pathlib import Path
 
-from fastapi import FastAPI, File, Header, HTTPException, UploadFile
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
 from .llm import score_answer
@@ -52,12 +52,7 @@ async def transcribe(audio: UploadFile = File(...)) -> TranscribeResponse:
 
 
 @app.post("/v1/score", response_model=ScoreResponse)
-async def score(
-    body: ScoreRequest,
-    x_openai_api_key: str | None = Header(default=None),
-) -> ScoreResponse:
+async def score(body: ScoreRequest) -> ScoreResponse:
     if not body.transcript.strip():
         raise HTTPException(status_code=400, detail="Transcript is empty")
-    # Optional: allow the client to provide an API key via header.
-    # This keeps local demos self-contained without requiring server env vars.
-    return await score_answer(body, api_key_override=x_openai_api_key)
+    return await score_answer(body)

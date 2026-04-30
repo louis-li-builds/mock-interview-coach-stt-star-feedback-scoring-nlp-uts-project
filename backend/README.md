@@ -33,6 +33,18 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
+### Configure environment variables (recommended: `backend/.env`)
+
+For local development, the backend loads `backend/.env` automatically (dotenv) without overriding existing shell env vars.
+
+1. Copy the example:
+
+```bash
+cp .env.example .env
+```
+
+2. Edit `backend/.env` and set `OPENAI_API_KEY=...` if you want LLM scoring. If left empty, scoring falls back to deterministic mock.
+
 Check that `pip` belongs to the venv (optional):
 
 ```bash

@@ -53,7 +53,7 @@ force_mock == true?
                   any failure / parse error / incomplete breakdown → mock (fallback)
 ```
 
-There is **no** `python-dotenv` load in this repo: the key must come from the **process environment** (shell, IDE, or host).
+The backend loads `backend/.env` via **python-dotenv** for local development (without overriding existing env vars). You can also set env vars in your shell / IDE.
 
 ---
 

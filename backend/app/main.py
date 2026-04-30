@@ -5,9 +5,14 @@ from pathlib import Path
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
+from dotenv import load_dotenv
+
 from .llm import score_answer
 from .schemas import ScoreRequest, ScoreResponse, TranscribeResponse
 from .stt import transcribe_file
+
+# Load backend/.env for local development (does not override existing env vars).
+load_dotenv()
 
 app = FastAPI(title="Mock Interview Coach API", version="0.1.0")
 

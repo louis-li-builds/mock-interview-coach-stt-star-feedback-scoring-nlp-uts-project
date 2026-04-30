@@ -6,7 +6,7 @@ This document is the **canonical technical description** of how interview answer
 
 ## Role in the pipeline
 
-1. The frontend sends **transcript** plus **question** metadata after STT (or demo text).
+1. The frontend sends **transcript**, **question** metadata, and optional **`force_mock`** after STT (or demo text).
 2. FastAPI **`POST /v1/score`** (`backend/app/main.py`) builds a `ScoreRequest` and calls **`score_answer()`** in `llm.py`.
 3. The response includes **`source`**: `"mock"` or `"llm"` so the UI and experiments can tell which path ran.
 
@@ -21,6 +21,7 @@ This document is the **canonical technical description** of how interview answer
 | `transcript` | string | Non-empty after trim (empty → HTTP 400). |
 | `question_title` | string | min length 1 |
 | `question_body` | string | min length 1 |
+| `force_mock` | boolean | Optional, default `false`. If `true`, always use the mock scorer even when `OPENAI_API_KEY` is set (UI “Mock only” / experiments). |
 
 **Response** (`ScoreResponse`):
 
@@ -43,11 +44,13 @@ This document is the **canonical technical description** of how interview answer
 ## Decision logic (high level)
 
 ```
-OPENAI_API_KEY unset or empty?
+force_mock == true?
   yes → deterministic mock scorer (_mock_score)
-  no  → OpenAI Chat Completions (JSON mode)
-          success and valid JSON with ≥4 breakdown rows → llm
-          any failure / parse error / incomplete breakdown → mock (fallback)
+  no  → OPENAI_API_KEY unset or empty?
+          yes → mock
+          no  → OpenAI Chat Completions (JSON mode)
+                  success and valid JSON with ≥4 breakdown rows → llm
+                  any failure / parse error / incomplete breakdown → mock (fallback)
 ```
 
 There is **no** `python-dotenv` load in this repo: the key must come from the **process environment** (shell, IDE, or host).
@@ -107,7 +110,7 @@ After parsing, if `breakdown` has fewer than four entries, the code raises and *
 
 ## Frontend
 
-The feedback step shows **Scoring source** from `result.scoreSource` (mapped from API `source`). See `frontend/src/app/components/FeedbackStep.tsx`.
+On **Record your answer**, users pick **Scoring mode** (radio): **AI (if available)** (`force_mock: false`) or **Mock only** (`force_mock: true`) before **Analyze recording**. The feedback step shows **Scoring source** from `result.scoreSource` (mapped from API `source`). See `RecordingStep.tsx` and `FeedbackStep.tsx`.
 
 ---
 

@@ -2,11 +2,18 @@ import { useEffect, useMemo } from 'react'
 import { useAudioRecorder } from '../../hooks/useAudioRecorder'
 
 interface RecordingStepProps {
+  forceMockScoring: boolean
+  onForceMockScoringChange: (value: boolean) => void
   onDemo: () => void
   onSubmitRecording: (blob: Blob) => void
 }
 
-export function RecordingStep({ onDemo, onSubmitRecording }: RecordingStepProps) {
+export function RecordingStep({
+  forceMockScoring,
+  onForceMockScoringChange,
+  onDemo,
+  onSubmitRecording,
+}: RecordingStepProps) {
   const recorder = useAudioRecorder()
 
   const previewUrl = useMemo(() => {
@@ -24,7 +31,43 @@ export function RecordingStep({ onDemo, onSubmitRecording }: RecordingStepProps)
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[500px] px-6 max-w-3xl mx-auto">
-      <h2 className="mb-8">Record your answer</h2>
+      <h2 className="mb-6">Record your answer</h2>
+
+      <fieldset className="mb-6 w-full max-w-xl mx-auto border border-border rounded-lg p-4 bg-card">
+        <legend className="text-sm font-medium px-1">Scoring mode</legend>
+        <p className="text-xs text-muted-foreground mb-3">
+          Choose before <strong>Analyze recording</strong>. Mock uses the server heuristic only; AI
+          uses the server LLM when an API key is configured (otherwise you still get mock).
+        </p>
+        <div className="flex flex-col gap-2">
+          <label className="flex items-start gap-2 cursor-pointer text-sm">
+            <input
+              type="radio"
+              name="scoring-mode"
+              className="mt-1"
+              checked={!forceMockScoring}
+              onChange={() => onForceMockScoringChange(false)}
+            />
+            <span>
+              <span className="font-medium">AI (if available)</span>
+              <span className="text-muted-foreground"> — server uses OpenAI when configured.</span>
+            </span>
+          </label>
+          <label className="flex items-start gap-2 cursor-pointer text-sm">
+            <input
+              type="radio"
+              name="scoring-mode"
+              className="mt-1"
+              checked={forceMockScoring}
+              onChange={() => onForceMockScoringChange(true)}
+            />
+            <span>
+              <span className="font-medium">Mock only</span>
+              <span className="text-muted-foreground"> — fast, deterministic heuristic on the server.</span>
+            </span>
+          </label>
+        </div>
+      </fieldset>
 
       {recorder.error ? (
         <p className="text-destructive mb-4 max-w-lg text-center" role="alert">

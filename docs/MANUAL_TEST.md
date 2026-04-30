@@ -29,8 +29,8 @@ First run may download the **tiny** Whisper model (several hundred MB for larger
 1. Keep `npm run dev` (default `VITE_API_BASE_URL=/api` proxy).
 2. Complete a real recording → **Analyze recording**.
 3. Expect **Transcribing** then **Scoring**, then feedback with **your** transcript (approximate) and breakdown.
-4. With **`OPENAI_API_KEY` unset**, scoring badge stays **Mock / offline** (heuristic scorer — see [SCORING.md](SCORING.md)).
-5. With **`OPENAI_API_KEY` set** (and network), badge **LLM** and suggestions should match the transcript more closely.
+4. On **Recording**, under **Scoring mode**, choose **Mock only** → after analyze, badge **Mock / offline** even if the server has `OPENAI_API_KEY`. Choose **AI (if available)** with key set → badge **LLM** when the call succeeds (see [SCORING.md](SCORING.md)).
+5. With **`OPENAI_API_KEY` unset** and **AI (if available)** selected, you still get **Mock** (server has no key).
 
 ## 4. Failure paths
 

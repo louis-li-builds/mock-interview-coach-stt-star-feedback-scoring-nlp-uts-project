@@ -52,6 +52,8 @@ export default function App() {
     'idle' | 'transcribing' | 'scoring'
   >('idle')
   const [processingError, setProcessingError] = useState<string | null>(null)
+  /** When true, POST /v1/score with force_mock so server uses heuristic even if API key is set. */
+  const [forceMockScoring, setForceMockScoring] = useState(false)
   const liveBlobRef = useRef<Blob | null>(null)
 
   const currentIndex = STEP_ORDER.indexOf(step)
@@ -78,6 +80,7 @@ export default function App() {
     setResult(null)
     setRunKind('none')
     setProcessingError(null)
+    setForceMockScoring(false)
     liveBlobRef.current = null
     setSessionKey((k) => k + 1)
     goTo(INITIAL_STEP)
@@ -123,7 +126,9 @@ export default function App() {
         const transcript = await transcribeAudio(blob)
         if (cancelled) return
         setProcessingPhase('scoring')
-        const scored = await scoreAnswer(transcript)
+        const scored = await scoreAnswer(transcript, MOCK_QUESTION, {
+          forceMock: forceMockScoring,
+        })
         if (cancelled) return
         setResult({
           transcript,
@@ -144,7 +149,7 @@ export default function App() {
     return () => {
       cancelled = true
     }
-  }, [goTo, processingAttempt, runKind, step])
+  }, [forceMockScoring, goTo, processingAttempt, runKind, step])
 
   const retryProcessing = useCallback(() => {
     setProcessingError(null)
@@ -189,6 +194,8 @@ export default function App() {
           {step === 'recording' ? (
             <RecordingStep
               key={sessionKey}
+              forceMockScoring={forceMockScoring}
+              onForceMockScoringChange={setForceMockScoring}
               onDemo={startProcessingDemo}
               onSubmitRecording={startProcessingLive}
             />

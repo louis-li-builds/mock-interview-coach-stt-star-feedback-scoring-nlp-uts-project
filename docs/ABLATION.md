@@ -15,9 +15,12 @@ Use this for the **course report / methodology** section: what to compare, how t
 {
   "transcript": "We had two weeks left. I paired with a senior and we reduced errors by 20%.",
   "question_title": "Behavioural (STAR)",
-  "question_body": "Tell me about a deadline."
+  "question_body": "Tell me about a deadline.",
+  "force_mock": false
 }
 ```
+
+Omit `force_mock` or set `false` for normal behaviour; set `"force_mock": true` to force the heuristic scorer even when the server has `OPENAI_API_KEY` (same as the UI **Mock only** option).
 
 ```bash
 curl -sS -X POST http://127.0.0.1:8000/v1/score \

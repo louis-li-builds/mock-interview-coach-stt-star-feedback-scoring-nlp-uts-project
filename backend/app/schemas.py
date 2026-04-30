@@ -11,6 +11,10 @@ class ScoreRequest(BaseModel):
     transcript: str
     question_title: str = Field(..., min_length=1)
     question_body: str = Field(..., min_length=1)
+    force_mock: bool = Field(
+        False,
+        description="If true, use deterministic mock scoring even when OPENAI_API_KEY is set.",
+    )
 
 
 class BreakdownRow(BaseModel):

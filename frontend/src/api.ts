@@ -57,6 +57,7 @@ export async function transcribeAudio(blob: Blob): Promise<string> {
 export async function scoreAnswer(
   transcript: string,
   question = MOCK_QUESTION,
+  opts?: { forceMock?: boolean },
 ): Promise<Pick<SessionResult, 'overallScore' | 'breakdown' | 'suggestions' | 'scoreSource'>> {
   const res = await fetch(`${API_BASE}/v1/score`, {
     method: 'POST',
@@ -65,6 +66,7 @@ export async function scoreAnswer(
       transcript,
       question_title: question.title,
       question_body: question.body,
+      force_mock: opts?.forceMock === true,
     }),
   })
   if (!res.ok) {

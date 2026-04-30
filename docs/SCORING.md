@@ -22,6 +22,7 @@ This document is the **canonical technical description** of how interview answer
 | `question_title` | string | min length 1 |
 | `question_body` | string | min length 1 |
 | `force_mock` | boolean | Optional, default `false`. If `true`, always use the mock scorer even when `OPENAI_API_KEY` is set (UI “Mock only” / experiments). |
+| `x-openai-api-key` | HTTP header | Optional. If provided, backend uses this key for the LLM path (unless `force_mock=true`). Useful for local demos without setting server env vars. |
 
 **Response** (`ScoreResponse`):
 
@@ -54,6 +55,7 @@ force_mock == true?
 ```
 
 There is **no** `python-dotenv` load in this repo: the key must come from the **process environment** (shell, IDE, or host).
+As of 2026-04, the `/v1/score` endpoint also accepts an optional **`x-openai-api-key` header** for local UI input.
 
 ---
 

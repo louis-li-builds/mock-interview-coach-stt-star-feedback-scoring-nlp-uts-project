@@ -89,6 +89,7 @@ Health check: `GET http://127.0.0.1:8000/v1/health`
 
 - `POST /v1/transcribe` — multipart field `audio` (e.g. `webm` from the browser).
 - `POST /v1/score` — JSON body: `transcript`, `question_title`, `question_body`, optional `force_mock` (boolean; when true, always mock even if `OPENAI_API_KEY` is set).
+  - Optional header: `x-openai-api-key` — use this key for LLM scoring without server env vars (ignored when `force_mock=true`).
 
 The Vite dev server proxies `/api` → this service (see `frontend/vite.config.ts`).
 

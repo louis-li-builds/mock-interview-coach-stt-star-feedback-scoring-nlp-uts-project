@@ -54,6 +54,7 @@ export default function App() {
   const [processingError, setProcessingError] = useState<string | null>(null)
   /** When true, POST /v1/score with force_mock so server uses heuristic even if API key is set. */
   const [forceMockScoring, setForceMockScoring] = useState(false)
+  const [userOpenAiKey, setUserOpenAiKey] = useState<string>('')
   const liveBlobRef = useRef<Blob | null>(null)
 
   const currentIndex = STEP_ORDER.indexOf(step)
@@ -81,6 +82,7 @@ export default function App() {
     setRunKind('none')
     setProcessingError(null)
     setForceMockScoring(false)
+    setUserOpenAiKey('')
     liveBlobRef.current = null
     setSessionKey((k) => k + 1)
     goTo(INITIAL_STEP)
@@ -128,6 +130,7 @@ export default function App() {
         setProcessingPhase('scoring')
         const scored = await scoreAnswer(transcript, MOCK_QUESTION, {
           forceMock: forceMockScoring,
+          apiKey: userOpenAiKey,
         })
         if (cancelled) return
         setResult({
@@ -149,7 +152,7 @@ export default function App() {
     return () => {
       cancelled = true
     }
-  }, [forceMockScoring, goTo, processingAttempt, runKind, step])
+  }, [forceMockScoring, goTo, processingAttempt, runKind, step, userOpenAiKey])
 
   const retryProcessing = useCallback(() => {
     setProcessingError(null)
@@ -196,6 +199,8 @@ export default function App() {
               key={sessionKey}
               forceMockScoring={forceMockScoring}
               onForceMockScoringChange={setForceMockScoring}
+              userOpenAiKey={userOpenAiKey}
+              onUserOpenAiKeyChange={setUserOpenAiKey}
               onDemo={startProcessingDemo}
               onSubmitRecording={startProcessingLive}
             />

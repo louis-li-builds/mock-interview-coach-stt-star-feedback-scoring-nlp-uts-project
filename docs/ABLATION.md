@@ -6,7 +6,7 @@ Use this for the **course report / methodology** section: what to compare, how t
 
 | Condition | Setup | Expected |
 |-----------|--------|----------|
-| **A** | Unset `OPENAI_API_KEY`, restart API | `source` in JSON is `mock`; heuristic scores (exact formulas: [SCORING.md](SCORING.md)) |
+| **A** | Unset `OPENAI_API_KEY`, restart API | `source` in JSON is `mock`; lightweight NLP pipeline (layout + formulas: [SCORING.md](SCORING.md)) |
 | **B** | Set `OPENAI_API_KEY`, same transcript body | `source` is `llm`; scores follow chat JSON |
 
 **Reproduce (curl example):** save the same JSON body to `payload.json` (adjust strings):

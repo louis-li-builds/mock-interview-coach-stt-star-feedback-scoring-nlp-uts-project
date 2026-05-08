@@ -9,7 +9,7 @@ The system is a **mock interview coaching prototype** built around a **staged GU
 
 **Implementation references:** [STT.md](../STT.md) (Whisper / faster-whisper) · [SCORING.md](../SCORING.md) (mock formulas, LLM prompts, fallbacks).
 
-Evaluation dimensions follow the course narrative via **LLM system prompts** when the LLM path is active; the mock path uses fixed rubric labels but **length/digit heuristics** only (see SCORING). Example dimensions:
+Evaluation dimensions follow the course narrative via **LLM system prompts** when the LLM path is active; the mock path shares the same four rubric labels but scores them with a **lightweight NLP stack** (keywords, structure cues, fluency/fillers, confidence heuristics — see SCORING). Example dimensions:
 
 - STAR structure coverage (Situation / Task / Action / Result)
 - prompt relevance (semantic / on-topic reasoning)
@@ -84,7 +84,7 @@ NLP-A3/
 ├── CONTRIBUTING.md
 ├── .gitignore
 ├── frontend/          # Vite + React (staged UI, mic, API client)
-├── backend/           # FastAPI: /v1/transcribe, /v1/score
+├── backend/           # FastAPI: STT + /v1/score; NLP mock lives in app/nlp/
 ├── docs/
 │   ├── README.md
 │   ├── STT.md           # STT pipeline (canonical)
@@ -103,7 +103,7 @@ NLP-A3/
 ## Tech stack (as implemented)
 
 - **Frontend**: React + Vite + **Tailwind CSS v4** (UI from `NLP/A3/ref-figma`; recording via MediaRecorder)
-- **Backend**: FastAPI — `backend/` (`faster-whisper` STT; OpenAI JSON scoring when key present, else mock)
+- **Backend**: FastAPI — `backend/` (`faster-whisper` STT; OpenAI JSON scoring when key present, else **`app/nlp` lightweight NLP mock**)
 - **STT**: see [STT.md](../STT.md)
 - **Scoring**: see [SCORING.md](../SCORING.md)
 - **Optional / future**: embeddings baselines, persistence — not required for current MVP

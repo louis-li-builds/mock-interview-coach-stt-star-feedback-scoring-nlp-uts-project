@@ -9,6 +9,6 @@ For architecture, tech stack, milestones, and collaboration notes, use the langu
 - English: `docs/en/README.md`
 - 繁體中文: `docs/zh-TW/README.md`
 - **STT (speech → text):** [STT.md](STT.md)
-- **Scoring (mock + LLM):** [SCORING.md](SCORING.md)
+- **Scoring (NLP mock path + LLM):** [SCORING.md](SCORING.md)
 - Manual QA checklist: [MANUAL_TEST.md](MANUAL_TEST.md)
 - Ablation / report comparisons: [ABLATION.md](ABLATION.md)

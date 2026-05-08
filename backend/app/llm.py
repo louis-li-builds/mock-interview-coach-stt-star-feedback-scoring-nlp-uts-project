@@ -2,11 +2,11 @@
 
 import json
 import os
-import re
 from typing import Any
 
 from openai import AsyncOpenAI
 
+from .nlp import evaluate_mock_nlp
 from .schemas import BreakdownRow, ScoreRequest, ScoreResponse
 
 def _log_llm_event(msg: str) -> None:
@@ -49,32 +49,8 @@ def _system_prompt() -> str:
 
 
 def _mock_score(req: ScoreRequest) -> ScoreResponse:
-    t = req.transcript.strip()
-    n = max(len(t), 1)
-    base = min(88, 36 + n // 10)
-    star = min(25, 10 + n // 25)
-    rel = min(25, 12 + (5 if "?" not in t else 0))
-    evi = min(25, 8 + (6 if re.search(r"\d", t) else 0))
-    clr = min(25, 10 + n // 40)
-    breakdown = [
-        BreakdownRow(label="STAR coverage", score=float(star), max=25.0),
-        BreakdownRow(label="Prompt relevance", score=float(rel), max=25.0),
-        BreakdownRow(label="Measurable evidence", score=float(evi), max=25.0),
-        BreakdownRow(label="Clarity & structure", score=float(clr), max=25.0),
-    ]
-    sug = [
-        "Add one concrete metric (date, duration, % improvement) in the Result.",
-        "State Situation and Task in one sentence each before deep diving into Action.",
-        "Close with what you learned or would change next time.",
-    ]
-    if not re.search(r"\d", t):
-        sug.insert(0, "Include at least one number or measurable outcome if possible.")
-    return ScoreResponse(
-        overall_score=int(base),
-        breakdown=breakdown,
-        suggestions=sug[:5],
-        source="mock",
-    )
+    """Path A: lightweight NLP layer (keyword / structure / fluency / confidence + templates)."""
+    return evaluate_mock_nlp(req)
 
 
 def _parse_score_payload(data: dict[str, Any]) -> ScoreResponse:

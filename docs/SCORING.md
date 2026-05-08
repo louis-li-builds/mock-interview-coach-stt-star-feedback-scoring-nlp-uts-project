@@ -1,6 +1,6 @@
 # Scoring module — design and behaviour
 
-This document is the **canonical technical description** of how interview answers are scored in NLP A3. Implementation lives in **`backend/app/llm.py`**; API contract in **`backend/app/schemas.py`**.
+This document is the **canonical technical description** of how interview answers are scored in NLP A3. Path B (LLM) lives in **`backend/app/llm.py`**; Path A (mock) is orchestrated by **`backend/app/nlp/mock_engine.py`** (with **`backend/app/nlp/types.py`** for shared dataclasses). API contract in **`backend/app/schemas.py`**.
 
 ---
 
@@ -57,26 +57,49 @@ The backend loads `backend/.env` via **python-dotenv** for local development (wi
 
 ---
 
-## Path A — Mock (heuristic) scorer
+## Path A — Mock (lightweight NLP) scorer
 
 Used when:
 
 - `OPENAI_API_KEY` is not set, or  
 - LLM call fails for any reason (network, quota, invalid JSON, fewer than four breakdown rows).
 
-Let `t` = `transcript.strip()`, `n` = `max(len(t), 1)`.
+Path A runs a **deterministic NLP stack** (no LLM): transcript normalization → keyword relevance → structure cues → fluency (fillers) → confidence heuristic → weighted overall → rule-based suggestions.
 
-| Output | Formula / rule |
-|--------|----------------|
-| `overall_score` | `min(88, 36 + n // 10)` (integer) |
-| STAR coverage | `min(25, 10 + n // 25)` |
-| Prompt relevance | `min(25, 12 + 5)` if `"?"` **not** in `t`, else `min(25, 12)` |
-| Measurable evidence | `min(25, 8 + 6)` if any ASCII digit in `t`, else `min(25, 8)` |
-| Clarity & structure | `min(25, 10 + n // 40)` |
+### Package layout (`backend/app/nlp/`)
 
-**Suggestions:** three fixed STAR-style bullets; if `t` has **no** digit (`\d`), a fourth bullet is prepended asking for a measurable outcome.
+```
+types.py           — KeywordScoreResult, StructureResult, FluencyResult, ConfidenceResult, FeedbackInput, …
+preprocess/        — `normalize.py`: clean STT text, lowercase, tokenize, `light_stem`
+analyzers/         — `keywords`, `structure`, `fluency`, `evidence`, `confidence`
+scoring/           — `aggregate.py` (weighted overall), `breakdown.py` (four rubric rows)
+feedback/          — `templates.py` (rule-based suggestion strings)
+mock_engine.py     — `evaluate_mock_nlp()` wires all stages → `ScoreResponse`
+```
 
-**Limitations (important for reports):** mock scores depend mainly on **length** and **presence of digits**, not on semantic match to the question or true STAR structure. Use it as a **reproducible offline baseline**, not as a ground-truth judge.
+| Stage | Role |
+|--------|------|
+| **preprocess** | Clean STT text; lowercase; tokenize; optional light suffix normalization |
+| **analyzers.keywords** | Expected keywords from question text + STAR anchors; coverage → score 0–100 |
+| **analyzers.structure** | Intro / body / conclusion-style cues → `structure_score` 0–100 |
+| **analyzers.fluency** | Filler counting + optional pace adjustment if duration were supplied |
+| **analyzers.evidence** | Heuristic for numbers and KPI-style language → score 0–100 |
+| **analyzers.confidence** | Length, filler density, positive diction → `confidence_score` 0–100 |
+| **scoring.aggregate** | `overall = 0.4·keyword + 0.2·structure + 0.2·fluency + 0.2·confidence` (clamp + round) |
+| **feedback.templates** | Template + rule bullets from the signals above |
+
+### Mapping to API breakdown (each row max 25)
+
+| Breakdown label | Source (0–100 domain scaled ×25) |
+|-----------------|-----------------------------------|
+| STAR coverage | `structure_score` |
+| Prompt relevance | keyword coverage score |
+| Measurable evidence | measurable heuristic |
+| Clarity & structure | `fluency_score` |
+
+**Suggestions:** generated from keyword gap, missing structure sections, filler density, weak metrics, and low-confidence heuristics (deduped, max five).
+
+**Limitations:** keyword overlap is lexical (no embeddings); structure cues are pattern-based; fluency has no audio timestamps unless extended later. Suitable as a **transparent baseline** and offline experiments, not as a human interviewer substitute.
 
 ---
 
@@ -125,7 +148,10 @@ On **Record your answer**, users pick **Scoring mode** (radio): **AI (if availab
 
 | File | Purpose |
 |------|---------|
-| `backend/app/llm.py` | All scoring logic |
+| `backend/app/llm.py` | LLM path + `_mock_score` entry |
+| `backend/app/nlp/mock_engine.py` | Mock NLP orchestration (`evaluate_mock_nlp`) |
+| `backend/app/nlp/types.py` | Shared NLP result dataclasses |
+| `backend/app/nlp/preprocess/`, `analyzers/`, `scoring/`, `feedback/` | Stages as above |
 | `backend/app/schemas.py` | `ScoreRequest`, `ScoreResponse`, `BreakdownRow` |
 | `backend/app/main.py` | HTTP `/v1/score` |
 | `backend/README.md` | Env vars and run instructions |

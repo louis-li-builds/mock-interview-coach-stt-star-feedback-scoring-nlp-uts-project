@@ -1,6 +1,6 @@
 # Mock Interview Coach — API
 
-FastAPI service for **STT** (faster-whisper) and **scoring** (OpenAI JSON when `OPENAI_API_KEY` is set; otherwise deterministic mock).
+FastAPI service for **STT** (faster-whisper) and **scoring** (OpenAI JSON when `OPENAI_API_KEY` is set; otherwise the **lightweight NLP mock** in `app/nlp/`).
 
 ## Setup (virtualenv in `backend/.venv`)
 
@@ -43,7 +43,7 @@ For local development, the backend loads `backend/.env` automatically (dotenv) w
 cp .env.example .env
 ```
 
-2. Edit `backend/.env` and set `OPENAI_API_KEY=...` if you want LLM scoring. If left empty, scoring falls back to deterministic mock.
+2. Edit `backend/.env` and set `OPENAI_API_KEY=...` if you want LLM scoring. If left empty, scoring uses the **NLP mock** path (see below).
 
 Check that `pip` belongs to the venv (optional):
 
@@ -82,6 +82,18 @@ uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
 Health check: `GET http://127.0.0.1:8000/v1/health`
+
+## Mock scoring — `app/nlp/`
+
+When the LLM is not used (`OPENAI_API_KEY` unset, `force_mock: true`, or LLM failure), `_mock_score` calls `evaluate_mock_nlp()` in **`app/nlp/mock_engine.py`**. Stages live in subpackages:
+
+- **`preprocess/`** — normalize STT text and tokens  
+- **`analyzers/`** — keywords, structure, fluency, measurable evidence, confidence  
+- **`scoring/`** — weighted overall + rubric breakdown rows  
+- **`feedback/`** — rule-based suggestions  
+- **`types.py`** — shared dataclasses  
+
+Canonical behaviour and weights: [`../docs/SCORING.md`](../docs/SCORING.md).
 
 ## Environment
 

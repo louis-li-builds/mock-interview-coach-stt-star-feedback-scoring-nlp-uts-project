@@ -9,7 +9,7 @@
 
 **實作說明（canonical）：** [STT.md](../STT.md)（Whisper / faster-whisper）· [SCORING.md](../SCORING.md)（mock 公式、LLM prompt、fallback）。
 
-評估面向在 **LLM 路徑** 下由 **system prompt** 對齊 STAR 等敘述；**mock 路徑** 僅使用固定維度標籤，分數本質為 **字長／數字** 等啟發式（詳見 SCORING）。例如：
+評估面向在 **LLM 路徑** 下由 **system prompt** 對齊 STAR 等敘述；**mock 路徑** 使用相同四維標籤，但以 **輕量 NLP**（關鍵字／結構／語流／信心啟發式等）計分（詳見 SCORING）。例如：
 
 - STAR 結構覆蓋（Situation / Task / Action / Result）
 - 題目相關度（語意／論述是否扣題）
@@ -84,7 +84,7 @@ NLP-A3/
 ├── CONTRIBUTING.md
 ├── .gitignore
 ├── frontend/          # Vite + React（分階段 UI、錄音、呼叫 API）
-├── backend/           # FastAPI：/v1/transcribe、/v1/score
+├── backend/           # FastAPI：STT + /v1/score；無金鑰時 mock 於 app/nlp/
 ├── docs/
 │   ├── README.md
 │   ├── STT.md           # STT 管線（canonical）
@@ -103,7 +103,7 @@ NLP-A3/
 ## 技術選型（目前實作）
 
 - **Frontend**：React + Vite + **Tailwind CSS v4**（`NLP/A3/ref-figma`；MediaRecorder）
-- **Backend**：FastAPI — `backend/`（faster-whisper STT；有金鑰時 OpenAI JSON 打分，否則 mock）
+- **Backend**：FastAPI — `backend/`（faster-whisper STT；有金鑰時 OpenAI JSON 打分，否則 **`app/nlp` 輕量 NLP mock**）
 - **STT**：見 [STT.md](../STT.md)
 - **打分**：見 [SCORING.md](../SCORING.md)
 - **可選／未來**：embedding 對照、持久化 — 非目前 MVP 必要

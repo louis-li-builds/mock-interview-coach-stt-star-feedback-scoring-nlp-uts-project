@@ -3,7 +3,7 @@
 **[Full guide (English)](docs/en/README.md)** · **[完整說明（繁體中文）](docs/zh-TW/README.md)** · [Documentation hub](docs/README.md)
 
 **NLP A3** is a course project for **NLP Assessment 3 (Project Development)**.  
-It builds a **mock interview coaching prototype**: phased **GUI** → speech (mic; optional camera) → **open-source STT** → transcript → **scoring** (OpenAI LLM when configured, else deterministic mock) → final feedback stage back to the user.
+It builds a **mock interview coaching prototype**: phased **GUI** → speech (mic; optional camera) → **open-source STT** → transcript → **scoring** (OpenAI LLM when configured, else a **lightweight NLP mock** layer: keywords, structure, fluency, evidence heuristics) → final feedback stage back to the user.
 
 This file is the **overview** only. Architecture, tech stack, repo layout, and collaboration notes live in the language-specific guides.
 
@@ -11,7 +11,7 @@ This file is the **overview** only. Architecture, tech stack, repo layout, and c
 
 ## At-a-glance workflow
 
-High-level path: **User → GUI (staged flow) → STT → scoring (OpenAI LLM or mock) → feedback GUI → User.**
+High-level path: **User → GUI (staged flow) → STT → scoring (OpenAI LLM or NLP mock) → feedback GUI → User.**
 
 ```mermaid
 flowchart LR
@@ -52,7 +52,7 @@ uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 
 Full setup (venv reset, `python3` fallback, space-in-path notes) is in **[backend/README.md](backend/README.md)**.
 
-With both running, use **Analyze recording** in the UI for real STT. Without `OPENAI_API_KEY`, scoring uses a deterministic mock. **Run demo pipeline** works with the frontend alone. See [docs/MANUAL_TEST.md](docs/MANUAL_TEST.md) for a full checklist. **STT and scoring design:** [docs/STT.md](docs/STT.md), [docs/SCORING.md](docs/SCORING.md).
+With **both** frontend and backend running, use **Analyze recording** for real STT plus server-side scoring. Without `OPENAI_API_KEY`, scoring uses the **NLP mock** path (`backend/app/nlp/`). **Run demo pipeline** (or `VITE_USE_MOCK=true`) exercises the UI **without** the API. See [docs/MANUAL_TEST.md](docs/MANUAL_TEST.md). **STT and scoring design:** [docs/STT.md](docs/STT.md), [docs/SCORING.md](docs/SCORING.md).
 
 ---
 

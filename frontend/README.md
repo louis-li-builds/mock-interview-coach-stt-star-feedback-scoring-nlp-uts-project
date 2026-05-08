@@ -1,4 +1,18 @@
-# React + TypeScript + Vite
+# NLP A3 — Frontend (Vite + React)
+
+This folder is the **Mock Interview Coach** UI for the NLP A3 project. For **architecture, scoring/STT docs, and how to run the stack**, start at the repo root [README.md](../README.md).
+
+## Quick run
+
+```bash
+npm install && npm run dev
+```
+
+The dev server proxies **`/api` → `http://127.0.0.1:8000`** (see `vite.config.ts`). **Live recording → Analyze** requires the **FastAPI backend** running on port 8000 (STT + scoring). **Demo pipeline** or **`VITE_USE_MOCK=true`** (see `.env.example`) can run without the API.
+
+---
+
+Below is the default Vite template reference (ESLint / React Compiler notes).
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 

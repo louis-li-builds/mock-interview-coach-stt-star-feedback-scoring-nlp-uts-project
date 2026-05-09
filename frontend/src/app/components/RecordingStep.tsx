@@ -2,15 +2,15 @@ import { useEffect, useMemo } from 'react'
 import { useAudioRecorder } from '../../hooks/useAudioRecorder'
 
 interface RecordingStepProps {
-  forceMockScoring: boolean
-  onForceMockScoringChange: (value: boolean) => void
+  scoringMode: 'ai' | 'mock' | 'demo'
+  onScoringModeChange: (value: 'ai' | 'mock' | 'demo') => void
   onDemo: () => void
   onSubmitRecording: (blob: Blob) => void
 }
 
 export function RecordingStep({
-  forceMockScoring,
-  onForceMockScoringChange,
+  scoringMode,
+  onScoringModeChange,
   onDemo,
   onSubmitRecording,
 }: RecordingStepProps) {
@@ -36,8 +36,9 @@ export function RecordingStep({
       <fieldset className="mb-6 w-full max-w-xl mx-auto border border-border rounded-lg p-4 bg-card">
         <legend className="text-sm font-medium px-1">Scoring mode</legend>
         <p className="text-xs text-muted-foreground mb-3">
-          Choose before <strong>Analyze recording</strong>. Mock uses the server heuristic only; AI
-          uses the server LLM when an API key is configured (otherwise you still get mock).
+          Choose before <strong>Analyze</strong>. Demo runs offline sample feedback; Mock and AI use
+          the backend (STT + scoring). AI uses the server LLM when configured (otherwise you still
+          get mock).
         </p>
         <div className="flex flex-col gap-2">
           <label className="flex items-start gap-2 cursor-pointer text-sm">
@@ -45,8 +46,21 @@ export function RecordingStep({
               type="radio"
               name="scoring-mode"
               className="mt-1"
-              checked={!forceMockScoring}
-              onChange={() => onForceMockScoringChange(false)}
+              checked={scoringMode === 'demo'}
+              onChange={() => onScoringModeChange('demo')}
+            />
+            <span>
+              <span className="font-medium">Demo (offline)</span>
+              <span className="text-muted-foreground"> — no mic, no API; uses sample data.</span>
+            </span>
+          </label>
+          <label className="flex items-start gap-2 cursor-pointer text-sm">
+            <input
+              type="radio"
+              name="scoring-mode"
+              className="mt-1"
+              checked={scoringMode === 'ai'}
+              onChange={() => onScoringModeChange('ai')}
             />
             <span>
               <span className="font-medium">AI (if available)</span>
@@ -58,8 +72,8 @@ export function RecordingStep({
               type="radio"
               name="scoring-mode"
               className="mt-1"
-              checked={forceMockScoring}
-              onChange={() => onForceMockScoringChange(true)}
+              checked={scoringMode === 'mock'}
+              onChange={() => onScoringModeChange('mock')}
             />
             <span>
               <span className="font-medium">Mock only</span>
@@ -124,28 +138,25 @@ export function RecordingStep({
               </button>
               <button
                 type="button"
-                disabled={!canAnalyze}
                 onClick={() => {
-                  if (recorder.blob) onSubmitRecording(recorder.blob)
+                  if (scoringMode === 'demo') {
+                    onDemo()
+                    return
+                  }
+                  if (recorder.blob && canAnalyze) onSubmitRecording(recorder.blob)
                 }}
+                disabled={scoringMode !== 'demo' && !canAnalyze}
                 className="bg-primary text-primary-foreground px-8 py-3 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-40"
               >
-                Analyze recording
+                Analyze
               </button>
             </div>
           </div>
         ) : null}
       </div>
 
-      <button
-        type="button"
-        onClick={onDemo}
-        className="border-2 border-dashed border-border bg-transparent text-foreground px-6 py-3 rounded-lg hover:bg-accent transition-colors"
-      >
-        Run demo pipeline (no microphone)
-      </button>
-      <p className="text-muted-foreground mt-3 text-center max-w-md">
-        Use this to test the feedback UI with sample data, or when the API is offline.
+      <p className="text-muted-foreground mt-1 text-center max-w-md">
+        Tip: If the backend is offline, switch to <strong>Demo (offline)</strong>.
       </p>
     </div>
   )

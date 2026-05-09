@@ -11,24 +11,40 @@ This file is the **overview** only. Architecture, tech stack, repo layout, and c
 
 ## At-a-glance workflow
 
-High-level path: **User → GUI (staged flow) → STT → scoring (OpenAI LLM or NLP mock) → feedback GUI → User.**
+High-level path: **Speech → STT → transcript processing → `/v1/score` routing (LLM vs mock hybrid) → feedback + badge.**
 
 ```mermaid
-flowchart LR
-  U[User]
-  G[GUI phases]
-  STT[STT]
-  SC[Scoring]
-  FB[Feedback stage]
+flowchart TD
+  U([User])
 
-  U <--> G
-  G --> STT
-  STT --> SC
-  SC --> FB
-  FB --> G
+  subgraph client["Frontend"]
+    GUI["Staged wizard · scoring dropdown<br/>Demo · AI · Mock only"]
+    FB["Feedback · transcript · badge<br/>LLM · Mock(rule) · Mock(hybrid)"]
+  end
+
+  subgraph api["Backend · FastAPI"]
+    STT["POST /v1/transcribe<br/>faster-whisper"]
+    PRE["nlp/preprocess<br/>clean · tokens · light stem"]
+    R{"score_answer()"}
+    LLM["Path B · OpenAI JSON"]
+    MOCK["Path A · rules + optional embeddings<br/>USE_EMBEDDINGS · sentence-transformers"]
+  end
+
+  U <--> GUI
+  GUI --> STT
+  STT --> PRE
+  PRE --> R
+  R -->|"AI + OPENAI_API_KEY"| LLM
+  R -->|"Mock only · no key · LLM fails"| MOCK
+  LLM --> FB
+  MOCK --> FB
+  LLM -.->|"fallback"| MOCK
+  FB --> U
 ```
 
-Optional: a backend API orchestrates STT and scoring; persistence (`DB`) is not in the current MVP.
+- **Mock badge**: **Mock (hybrid)** means embeddings succeeded; **Mock (rule)** means rule-only baseline. Canonical detail: [docs/SCORING.md](docs/SCORING.md).
+
+Persistence (`DB`) is not in the current MVP.
 
 ---
 

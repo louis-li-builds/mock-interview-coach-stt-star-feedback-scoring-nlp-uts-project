@@ -36,21 +36,22 @@ export function RecordingStep({
       <div className="mb-6 w-full max-w-xl mx-auto border border-border rounded-lg p-4 bg-card">
         <div className="flex items-center justify-between gap-3">
           <label className="text-sm font-medium" htmlFor="scoring-mode">
-            Scoring mode
+            Feedback engine
           </label>
           <select
             id="scoring-mode"
             value={scoringMode}
             onChange={(e) => onScoringModeChange(e.target.value as RecordingStepProps['scoringMode'])}
-            className="min-w-[220px] rounded-lg border border-border bg-background px-3 py-2 text-sm"
+            className="min-w-[240px] rounded-lg border border-border bg-background px-3 py-2 text-sm"
           >
-            <option value="ai">AI (if available)</option>
-            <option value="mock">Mock only</option>
-            <option value="demo">Demo (offline)</option>
+            <option value="ai">Smart Coach · LLM</option>
+            <option value="mock">Rules Engine · Mock</option>
+            <option value="demo">Sample Preview · Offline</option>
           </select>
         </div>
         <p className="text-xs text-muted-foreground mt-2">
-          AI/Mock use the backend (STT + scoring). Demo uses sample data.
+          Smart Coach &amp; Rules Engine use the backend for speech-to-text and scoring. Sample Preview
+          skips the API with canned feedback.
         </p>
       </div>
 
@@ -127,7 +128,7 @@ export function RecordingStep({
       </div>
 
       <p className="text-muted-foreground mt-1 text-center max-w-md text-xs">
-        If the backend is offline, switch to <strong>Demo (offline)</strong>.
+        API unreachable? Choose <strong>Sample Preview · Offline</strong>.
       </p>
     </div>
   )

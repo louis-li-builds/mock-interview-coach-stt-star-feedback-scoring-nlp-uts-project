@@ -35,18 +35,19 @@
 ## 系統流程圖
 
 ```mermaid
+%%{init: {'theme':'neutral','flowchart':{'curve':'basis'}}}%%
 flowchart LR
-  U[User]
+  U([使用者])
   G[GUI 多階段]
   STT[STT]
   SC[打分]
-  FB[回饋階段]
+  FB[回饋]
 
   U <--> G
-  G --> STT
-  STT --> SC
-  SC --> FB
-  FB --> G
+  G --> STT --> SC --> FB --> G
+
+  classDef n fill:#eef2ff,stroke:#6366f1,stroke-width:2px,color:#312e81
+  class U,G,FB n
 ```
 
 實務上由 **Backend API** 在 GUI 與 STT／打分之間編排請求與金鑰；目前 MVP **未**實作持久儲存。

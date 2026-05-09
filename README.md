@@ -14,35 +14,42 @@ This file is the **overview** only. Architecture, tech stack, repo layout, and c
 High-level path: **Speech → STT → transcript processing → `/v1/score` routing (LLM vs mock hybrid) → feedback + badge.**
 
 ```mermaid
-flowchart TD
-  U([User])
+%%{init: {'theme':'neutral','flowchart':{'curve':'basis'}}}%%
+flowchart TB
+  U((User))
 
-  subgraph client["Frontend"]
-    GUI["Staged wizard · scoring dropdown<br/>Demo · AI · Mock only"]
-    FB["Feedback · transcript · badge<br/>LLM · Mock(rule) · Mock(hybrid)"]
+  subgraph FE[Browser · Vite]
+    direction TB
+    GUI["Interview wizard + feedback engine"]
+    FB["Scores · transcript · source badges"]
   end
 
-  subgraph api["Backend · FastAPI"]
-    STT["POST /v1/transcribe<br/>faster-whisper"]
-    PRE["nlp/preprocess<br/>clean · tokens · light stem"]
-    R{"score_answer()"}
-    LLM["Path B · OpenAI JSON"]
-    MOCK["Path A · rules + optional embeddings<br/>USE_EMBEDDINGS · sentence-transformers"]
+  subgraph BE[FastAPI backend]
+    direction TB
+    STT["/v1/transcribe · faster-whisper"]
+    PRE["Preprocess · tokens · light stem"]
+    R{"score_answer · llm.py"}
+    P_B["Path B · OpenAI JSON"]
+    P_A["Path A · NLP mock · optional embeddings"]
   end
 
   U <--> GUI
-  GUI --> STT
-  STT --> PRE
-  PRE --> R
-  R -->|"AI + OPENAI_API_KEY"| LLM
-  R -->|"Mock only · no key · LLM fails"| MOCK
-  LLM --> FB
-  MOCK --> FB
-  LLM -.->|"fallback"| MOCK
+  GUI --> STT --> PRE --> R
+  R -->|API key · Smart Coach| P_B
+  R -->|Rules Engine · no key · LLM error| P_A
+  P_B --> FB
+  P_A --> FB
+  P_B -.->|fallback| P_A
   FB --> U
+
+  classDef fe fill:#eef2ff,stroke:#6366f1,stroke-width:2px,color:#312e81
+  classDef be fill:#f8fafc,stroke:#64748b,stroke-width:2px,color:#334155
+  class GUI,FB fe
+  class STT,PRE,R,P_B,P_A be
 ```
 
-- **Mock badge**: **Mock (hybrid)** means embeddings succeeded; **Mock (rule)** means rule-only baseline. Canonical detail: [docs/SCORING.md](docs/SCORING.md).
+- **Feedback engine** (recording step): **Smart Coach · LLM** · **Rules Engine · Mock** · **Sample Preview · Offline** — see `RecordingStep.tsx`.
+- **Mock badges**: **Mock (hybrid)** = embeddings ran successfully; **Mock (rule)** = rules-only. Canonical detail: [docs/SCORING.md](docs/SCORING.md).
 
 Persistence (`DB`) is not in the current MVP.
 

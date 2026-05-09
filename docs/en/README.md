@@ -35,18 +35,19 @@ One-liner: **User → GUI → STT → scoring (LLM or mock) → GUI → User**.
 ## System workflow diagram
 
 ```mermaid
+%%{init: {'theme':'neutral','flowchart':{'curve':'basis'}}}%%
 flowchart LR
-  U[User]
+  U([User])
   G[Staged GUI]
   STT[STT]
   SC[Scoring]
-  FB[Feedback stage]
+  FB[Feedback]
 
   U <--> G
-  G --> STT
-  STT --> SC
-  SC --> FB
-  FB --> G
+  G --> STT --> SC --> FB --> G
+
+  classDef n fill:#eef2ff,stroke:#6366f1,stroke-width:2px,color:#312e81
+  class U,G,FB n
 ```
 
 In practice, a **backend API** sits between the GUI and STT/scoring for orchestration and secrets; optional **persistence** is not in the current MVP.

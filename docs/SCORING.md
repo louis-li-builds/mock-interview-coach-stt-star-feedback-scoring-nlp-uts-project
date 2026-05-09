@@ -11,19 +11,25 @@ This document is the **canonical technical description** of how interview answer
 3. The response includes **`source`**: `"mock"` or `"llm"` so the UI and experiments can tell which path ran.
 
 ```mermaid
-flowchart TD
-  A[Speech input] --> B[STT /v1/transcribe]
-  B --> C[Transcript processor<br/>clean + tokenize + light_stem]
+%%{init: {'theme':'neutral','flowchart':{'curve':'basis'}}}%%
+flowchart TB
+  A([Speech]) --> B[STT · POST /v1/transcribe]
+  B --> C[Preprocess · clean · tokenize · light_stem]
 
-  C --> R1[Rule-based analyzers<br/>keywords · structure · fluency · evidence · confidence]
-  C -->|USE_EMBEDDINGS=true| E1[Semantic embedding layer (optional)<br/>sentence-transformers + cosine similarity]
+  C --> R1[Analyzers · keywords · structure · fluency · evidence · confidence]
+  C -.->|optional| E1[Semantic · sentence-transformers · cosine vs prompt]
 
-  R1 --> AGG[Score aggregator]
+  R1 --> AGG[Weighted aggregate]
   E1 --> AGG
 
-  AGG --> MAP[Breakdown mapping (0–25)<br/>STAR · Prompt relevance · Evidence · Clarity]
-  MAP --> FB[Feedback generator<br/>rule templates + optional semantic hint]
-  FB --> OUT[ScoreResponse<br/>source=mock/llm<br/>mock_variant=rule/hybrid (mock only)]
+  AGG --> MAP[Map to four rubric rows · 0–25 each]
+  MAP --> FB[Feedback templates]
+  FB --> OUT([ScoreResponse · source · mock_variant])
+
+  classDef stage fill:#f8fafc,stroke:#64748b,stroke-width:2px,color:#1e293b
+  classDef opt fill:#fffbeb,stroke:#d97706,stroke-width:2px,color:#78350f
+  class A,B,C,R1,AGG,MAP,FB,OUT stage
+  class E1 opt
 ```
 
 ---
@@ -37,7 +43,7 @@ flowchart TD
 | `transcript` | string | Non-empty after trim (empty → HTTP 400). |
 | `question_title` | string | min length 1 |
 | `question_body` | string | min length 1 |
-| `force_mock` | boolean | Optional, default `false`. If `true`, always use the mock scorer even when `OPENAI_API_KEY` is set (UI “Mock only” / experiments). |
+| `force_mock` | boolean | Optional, default `false`. If `true`, always use the mock scorer even when `OPENAI_API_KEY` is set (UI **Rules Engine · Mock** / experiments). |
 
 **Response** (`ScoreResponse`):
 
@@ -153,7 +159,7 @@ After parsing, if `breakdown` has fewer than four entries, the code raises and *
 
 ## Frontend
 
-On **Record your answer**, users pick **Scoring mode** (radio): **AI (if available)** (`force_mock: false`) or **Mock only** (`force_mock: true`) before **Analyze recording**. The feedback step shows **Scoring source** from `result.scoreSource` (mapped from API `source`). See `RecordingStep.tsx` and `FeedbackStep.tsx`.
+On **Record your answer**, users pick a **feedback engine** (dropdown): **Smart Coach · LLM** (`force_mock: false`), **Rules Engine · Mock** (`force_mock: true`), or **Sample Preview · Offline** (client-side demo path). The feedback step shows **scoring source** from `result.scoreSource` (mapped from API `source`) plus **Mock (rule)** / **Mock (hybrid)** / **LLM** badges when applicable. See `RecordingStep.tsx` and `FeedbackStep.tsx`.
 
 ---
 

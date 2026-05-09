@@ -14,40 +14,25 @@ This file is the **overview** only. Architecture, tech stack, repo layout, and c
 High-level path: **Speech → STT → transcript processing → `/v1/score` routing (LLM vs mock hybrid) → feedback + badge.**
 
 ```mermaid
-%%{init: {'theme':'neutral','flowchart':{'curve':'basis'}}}%%
 flowchart TB
   U((User))
+  BR[Browser: Vite, wizard, feedback]
+  STT[Transcribe: POST /v1/transcribe]
+  PRE[Preprocess transcript]
+  R{score_answer}
+  PB[LLM: OpenAI JSON]
+  PA[Mock: rules, optional embeddings]
 
-  subgraph FE[Browser · Vite]
-    direction TB
-    GUI["Interview wizard + feedback engine"]
-    FB["Scores · transcript · source badges"]
-  end
-
-  subgraph BE[FastAPI backend]
-    direction TB
-    STT["/v1/transcribe · faster-whisper"]
-    PRE["Preprocess · tokens · light stem"]
-    R{"score_answer · llm.py"}
-    P_B["Path B · OpenAI JSON"]
-    P_A["Path A · NLP mock · optional embeddings"]
-  end
-
-  U <--> GUI
-  GUI --> STT --> PRE --> R
-  R -->|API key · Smart Coach| P_B
-  R -->|Rules Engine · no key · LLM error| P_A
-  P_B --> FB
-  P_A --> FB
-  P_B -.->|fallback| P_A
-  FB --> U
-
-  classDef fe fill:#eef2ff,stroke:#6366f1,stroke-width:2px,color:#312e81
-  classDef be fill:#f8fafc,stroke:#64748b,stroke-width:2px,color:#334155
-  class GUI,FB fe
-  class STT,PRE,R,P_B,P_A be
+  U <--> BR
+  BR --> STT --> PRE --> R
+  R -->|LLM| PB
+  R -->|mock| PA
+  PB --> BR
+  PA --> BR
+  PB -.->|fallback| PA
 ```
 
+- **Edges**: **LLM** = Smart Coach when the backend has a key and accepts the LLM route; **mock** = Rules Engine, missing key, `force_mock`, or chosen mock mode; **fallback** = LLM error or invalid JSON → same mock stack.
 - **Feedback engine** (recording step): **Smart Coach · LLM** · **Rules Engine · Mock** · **Sample Preview · Offline** — see `RecordingStep.tsx`.
 - **Mock badges**: **Mock (hybrid)** = embeddings ran successfully; **Mock (rule)** = rules-only. Canonical detail: [docs/SCORING.md](docs/SCORING.md).
 

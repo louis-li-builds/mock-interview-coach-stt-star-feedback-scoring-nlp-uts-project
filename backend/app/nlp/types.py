@@ -47,3 +47,5 @@ class FeedbackInput:
     structure: StructureResult
     fluency: FluencyResult
     confidence: ConfidenceResult
+    question_title: str = ""
+    question_body: str = ""

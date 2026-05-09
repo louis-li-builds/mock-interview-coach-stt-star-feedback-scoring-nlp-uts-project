@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import os
+
 from ..analyzers.evidence import score_measurable_evidence
+from ..analyzers.semantic import score_semantic_relevance
 from ..types import FeedbackInput
 
 
@@ -20,6 +23,21 @@ def generate_feedback(ctx: FeedbackInput, *, max_items: int = 5) -> list[str]:
             "Good start — tighten relevance by naming one more concrete link between your story "
             "and what the interviewer asked."
         )
+
+    # Optional semantic relevance hint (only when USE_EMBEDDINGS=true and dependency available).
+    if (os.getenv("USE_EMBEDDINGS") or "").strip().lower() in {"1", "true", "yes", "on"}:
+        sem = score_semantic_relevance(
+            answer_text=ctx.clean_text,
+            question_title=ctx.question_title,
+            question_body=ctx.question_body,
+            reference_hint="situation, task, action, result, outcome, impact, learning",
+        )
+        if sem is not None and sem < 45:
+            lines.append(
+                "Your answer seems semantically off-topic — align your story to the prompt (challenge, actions, and outcome)."
+            )
+        elif sem is not None and sem > 75:
+            lines.append("Semantically, your answer stays on-topic — keep that focus while adding one crisp metric.")
 
     s = ctx.structure
     if not s.has_intro:

@@ -88,12 +88,21 @@ Health check: `GET http://127.0.0.1:8000/v1/health`
 When the LLM is not used (`OPENAI_API_KEY` unset, `force_mock: true`, or LLM failure), `_mock_score` calls `evaluate_mock_nlp()` in **`app/nlp/mock_engine.py`**. Stages live in subpackages:
 
 - **`preprocess/`** — normalize STT text and tokens  
-- **`analyzers/`** — keywords, structure, fluency, measurable evidence, confidence  
+- **`analyzers/`** — keywords, structure, fluency, measurable evidence, confidence, (optional) semantic embeddings  
 - **`scoring/`** — weighted overall + rubric breakdown rows  
 - **`feedback/`** — rule-based suggestions  
 - **`types.py`** — shared dataclasses  
 
 Canonical behaviour and weights: [`../docs/SCORING.md`](../docs/SCORING.md).
+
+### Optional: semantic embeddings (hybrid scoring)
+
+If you want a semantic layer (beyond lexical keyword overlap), install the extra dependency (already in `requirements.txt`) and set:
+
+- `USE_EMBEDDINGS=true`
+- `EMBEDDING_MODEL=all-MiniLM-L6-v2` (default)
+
+When enabled, the mock scorer computes an embedding similarity baseline and blends it into **Prompt relevance** and the **overall score** (details in `docs/SCORING.md`). If the dependency is missing or the model fails to load, it safely falls back to the deterministic rule-based path.
 
 ## Environment
 

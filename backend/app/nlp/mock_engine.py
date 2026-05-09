@@ -14,6 +14,7 @@ from .analyzers import (
     estimate_confidence,
     score_keywords,
     score_measurable_evidence,
+    score_semantic_relevance,
 )
 from .feedback import FeedbackInput, generate_feedback
 from .preprocess import process_transcript
@@ -29,6 +30,12 @@ def evaluate_mock_nlp(req: ScoreRequest) -> ScoreResponse:
         req.question_title,
         req.question_body,
     )
+    semantic = score_semantic_relevance(
+        answer_text=clean_text,
+        question_title=req.question_title,
+        question_body=req.question_body,
+        reference_hint="situation, task, action, result, outcome, impact, learning",
+    )
     structure = analyze_structure(clean_text)
     fluency = analyze_fluency(clean_text)
     confidence = estimate_confidence(
@@ -38,18 +45,24 @@ def evaluate_mock_nlp(req: ScoreRequest) -> ScoreResponse:
     )
     measurable = score_measurable_evidence(clean_text)
 
+    # Prompt relevance row stays stable for UI, but may be hybrid (lexical + semantic).
+    prompt_relevance_score = keyword.score
+    if semantic is not None:
+        prompt_relevance_score = 0.55 * keyword.score + 0.45 * semantic
+
     aggregated = aggregate_scores(
         keyword.score,
         structure.structure_score,
         fluency.fluency_score,
         confidence.confidence_score,
+        semantic,
     )
 
     overall = max(0, min(100, int(round(aggregated.overall))))
 
     breakdown = build_breakdown_rows(
         structure_score=structure.structure_score,
-        keyword_score=keyword.score,
+        keyword_score=prompt_relevance_score,
         measurable_score=measurable,
         fluency_score=fluency.fluency_score,
     )
@@ -57,6 +70,8 @@ def evaluate_mock_nlp(req: ScoreRequest) -> ScoreResponse:
     suggestions = generate_feedback(
         FeedbackInput(
             clean_text=clean_text,
+            question_title=req.question_title,
+            question_body=req.question_body,
             keyword=keyword,
             structure=structure,
             fluency=fluency,

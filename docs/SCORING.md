@@ -64,7 +64,7 @@ Used when:
 - `OPENAI_API_KEY` is not set, or  
 - LLM call fails for any reason (network, quota, invalid JSON, fewer than four breakdown rows).
 
-Path A runs a **deterministic NLP stack** (no LLM): transcript normalization → keyword relevance → structure cues → fluency (fillers) → confidence heuristic → weighted overall → rule-based suggestions.
+Path A runs a **deterministic NLP stack** (no LLM): transcript normalization → keyword relevance → (optional) semantic relevance via embeddings → structure cues → fluency (fillers) → confidence heuristic → weighted overall → rule-based suggestions.
 
 ### Package layout (`backend/app/nlp/`)
 
@@ -81,11 +81,12 @@ mock_engine.py     — `evaluate_mock_nlp()` wires all stages → `ScoreResponse
 |--------|------|
 | **preprocess** | Clean STT text; lowercase; tokenize; optional light suffix normalization |
 | **analyzers.keywords** | Expected keywords from question text + STAR anchors; coverage → score 0–100 |
+| **analyzers.semantic** | *(optional; gated by env)* Sentence-transformers embedding similarity → score 0–100 |
 | **analyzers.structure** | Intro / body / conclusion-style cues → `structure_score` 0–100 |
 | **analyzers.fluency** | Filler counting + optional pace adjustment if duration were supplied |
 | **analyzers.evidence** | Heuristic for numbers and KPI-style language → score 0–100 |
 | **analyzers.confidence** | Length, filler density, positive diction → `confidence_score` 0–100 |
-| **scoring.aggregate** | `overall = 0.4·keyword + 0.2·structure + 0.2·fluency + 0.2·confidence` (clamp + round) |
+| **scoring.aggregate** | default: `overall = 0.4·keyword + 0.2·structure + 0.2·fluency + 0.2·confidence`; embeddings enabled: `overall = 0.3·keyword + 0.2·structure + 0.2·fluency + 0.3·semantic` |
 | **feedback.templates** | Template + rule bullets from the signals above |
 
 ### Mapping to API breakdown (each row max 25)
@@ -93,13 +94,15 @@ mock_engine.py     — `evaluate_mock_nlp()` wires all stages → `ScoreResponse
 | Breakdown label | Source (0–100 domain scaled ×25) |
 |-----------------|-----------------------------------|
 | STAR coverage | `structure_score` |
-| Prompt relevance | keyword coverage score |
+| Prompt relevance | keyword score; if embeddings enabled, blended with semantic score |
 | Measurable evidence | measurable heuristic |
 | Clarity & structure | `fluency_score` |
 
 **Suggestions:** generated from keyword gap, missing structure sections, filler density, weak metrics, and low-confidence heuristics (deduped, max five).
 
-**Limitations:** keyword overlap is lexical (no embeddings); structure cues are pattern-based; fluency has no audio timestamps unless extended later. Suitable as a **transparent baseline** and offline experiments, not as a human interviewer substitute.
+**Embeddings (optional):** set `USE_EMBEDDINGS=true` and install `sentence-transformers`; model defaults to `all-MiniLM-L6-v2` (override with `EMBEDDING_MODEL`). If the dependency is missing or model load fails, Path A falls back to lexical / rule-based scoring.
+
+**Limitations:** structure cues are pattern-based; fluency has no audio timestamps unless extended later. Embedding similarity uses prompt-derived reference text (no curated reference answers), so treat it as a baseline semantic signal, not ground-truth judging.
 
 ---
 

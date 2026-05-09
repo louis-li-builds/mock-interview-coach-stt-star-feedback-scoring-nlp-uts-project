@@ -10,6 +10,22 @@ This document is the **canonical technical description** of how interview answer
 2. FastAPI **`POST /v1/score`** (`backend/app/main.py`) builds a `ScoreRequest` and calls **`score_answer()`** in `llm.py`.
 3. The response includes **`source`**: `"mock"` or `"llm"` so the UI and experiments can tell which path ran.
 
+```mermaid
+flowchart TD
+  A[Speech input] --> B[STT /v1/transcribe]
+  B --> C[Transcript processor<br/>clean + tokenize + light_stem]
+
+  C --> R1[Rule-based analyzers<br/>keywords · structure · fluency · evidence · confidence]
+  C -->|USE_EMBEDDINGS=true| E1[Semantic embedding layer (optional)<br/>sentence-transformers + cosine similarity]
+
+  R1 --> AGG[Score aggregator]
+  E1 --> AGG
+
+  AGG --> MAP[Breakdown mapping (0–25)<br/>STAR · Prompt relevance · Evidence · Clarity]
+  MAP --> FB[Feedback generator<br/>rule templates + optional semantic hint]
+  FB --> OUT[ScoreResponse<br/>source=mock/llm<br/>mock_variant=rule/hybrid (mock only)]
+```
+
 ---
 
 ## API contract
@@ -31,6 +47,7 @@ This document is the **canonical technical description** of how interview answer
 | `breakdown` | array | Four rows: fixed labels (see below), each `score` / `max` (max 25). |
 | `suggestions` | array of strings | Short actionable items. |
 | `source` | `"mock"` \| `"llm"` | Which scorer produced the result. |
+| `mock_variant` | `"rule"` \| `"hybrid"` \| `null` | Only present when `source="mock"`. `"hybrid"` means embeddings were enabled and actually used. |
 
 **Breakdown labels** (stable for UI and experiments):
 

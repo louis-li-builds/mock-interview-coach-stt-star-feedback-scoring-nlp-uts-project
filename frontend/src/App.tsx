@@ -135,6 +135,7 @@ export default function App() {
           breakdown: scored.breakdown,
           suggestions: scored.suggestions,
           scoreSource: scored.scoreSource,
+          mockVariant: scored.mockVariant,
         })
         goTo('feedback')
       } catch (e) {

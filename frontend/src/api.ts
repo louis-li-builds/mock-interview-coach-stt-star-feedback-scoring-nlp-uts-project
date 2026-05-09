@@ -14,19 +14,21 @@ type ScoreApiResponse = {
   breakdown: { label: string; score: number; max: number }[]
   suggestions: string[]
   source: 'llm' | 'mock'
+  mock_variant?: 'rule' | 'hybrid' | null
 }
 
 type TranscribeApiResponse = { transcript: string }
 
 function mapScore(data: ScoreApiResponse): Pick<
   SessionResult,
-  'overallScore' | 'breakdown' | 'suggestions' | 'scoreSource'
+  'overallScore' | 'breakdown' | 'suggestions' | 'scoreSource' | 'mockVariant'
 > {
   return {
     overallScore: data.overall_score,
     breakdown: data.breakdown,
     suggestions: data.suggestions,
     scoreSource: data.source,
+    mockVariant: data.mock_variant ?? undefined,
   }
 }
 
@@ -36,7 +38,7 @@ export function shouldUseClientMock(): boolean {
 
 export async function runClientMockPipeline(): Promise<SessionResult> {
   await delay(900)
-  return { ...MOCK_SESSION_RESULT, scoreSource: 'mock' }
+  return { ...MOCK_SESSION_RESULT, scoreSource: 'mock', mockVariant: 'rule' }
 }
 
 export async function transcribeAudio(blob: Blob): Promise<string> {
@@ -58,7 +60,9 @@ export async function scoreAnswer(
   transcript: string,
   question = MOCK_QUESTION,
   opts?: { forceMock?: boolean },
-): Promise<Pick<SessionResult, 'overallScore' | 'breakdown' | 'suggestions' | 'scoreSource'>> {
+): Promise<
+  Pick<SessionResult, 'overallScore' | 'breakdown' | 'suggestions' | 'scoreSource' | 'mockVariant'>
+> {
   const res = await fetch(`${API_BASE}/v1/score`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

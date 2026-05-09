@@ -23,7 +23,9 @@ export function FeedbackStep({ result }: FeedbackStepProps) {
     result.scoreSource === 'llm'
       ? 'LLM'
       : result.scoreSource === 'mock'
-        ? 'Mock / offline'
+        ? result.mockVariant === 'hybrid'
+          ? 'Mock (hybrid)'
+          : 'Mock (rule)'
         : '—'
 
   return (
@@ -39,9 +41,11 @@ export function FeedbackStep({ result }: FeedbackStepProps) {
               <span className="text-2xl text-muted-foreground">/100</span>
             </div>
           </div>
-          <div className="bg-accent px-4 py-2 rounded-lg">
-            <span className="text-muted-foreground mr-2">Scoring source:</span>
-            <span className="text-foreground">{sourceLabel}</span>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Scoring:</span>
+            <span className="inline-flex items-center rounded-full border border-border bg-accent px-3 py-1 text-sm text-foreground">
+              {sourceLabel}
+            </span>
           </div>
         </div>
 

@@ -70,6 +70,7 @@ def _parse_score_payload(data: dict[str, Any]) -> ScoreResponse:
         breakdown=rows,
         suggestions=suggestions,
         source="llm",
+        mock_variant=None,
     )
 
 

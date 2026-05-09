@@ -28,3 +28,7 @@ class ScoreResponse(BaseModel):
     breakdown: list[BreakdownRow]
     suggestions: list[str]
     source: Literal["llm", "mock"] = "mock"
+    mock_variant: Literal["rule", "hybrid"] | None = Field(
+        None,
+        description="Only set when source=mock. 'hybrid' means embeddings were enabled and actually used.",
+    )

@@ -36,6 +36,7 @@ def evaluate_mock_nlp(req: ScoreRequest) -> ScoreResponse:
         question_body=req.question_body,
         reference_hint="situation, task, action, result, outcome, impact, learning",
     )
+    mock_variant = "hybrid" if semantic is not None else "rule"
     structure = analyze_structure(clean_text)
     fluency = analyze_fluency(clean_text)
     confidence = estimate_confidence(
@@ -84,4 +85,5 @@ def evaluate_mock_nlp(req: ScoreRequest) -> ScoreResponse:
         breakdown=breakdown,
         suggestions=suggestions,
         source="mock",
+        mock_variant=mock_variant,
     )

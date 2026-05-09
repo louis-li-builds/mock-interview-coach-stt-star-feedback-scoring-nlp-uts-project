@@ -33,55 +33,26 @@ export function RecordingStep({
     <div className="flex flex-col items-center justify-center min-h-[500px] px-6 max-w-3xl mx-auto">
       <h2 className="mb-6">Record your answer</h2>
 
-      <fieldset className="mb-6 w-full max-w-xl mx-auto border border-border rounded-lg p-4 bg-card">
-        <legend className="text-sm font-medium px-1">Scoring mode</legend>
-        <p className="text-xs text-muted-foreground mb-3">
-          Choose before <strong>Analyze</strong>. Demo runs offline sample feedback; Mock and AI use
-          the backend (STT + scoring). AI uses the server LLM when configured (otherwise you still
-          get mock).
-        </p>
-        <div className="flex flex-col gap-2">
-          <label className="flex items-start gap-2 cursor-pointer text-sm">
-            <input
-              type="radio"
-              name="scoring-mode"
-              className="mt-1"
-              checked={scoringMode === 'demo'}
-              onChange={() => onScoringModeChange('demo')}
-            />
-            <span>
-              <span className="font-medium">Demo (offline)</span>
-              <span className="text-muted-foreground"> — no mic, no API; uses sample data.</span>
-            </span>
+      <div className="mb-6 w-full max-w-xl mx-auto border border-border rounded-lg p-4 bg-card">
+        <div className="flex items-center justify-between gap-3">
+          <label className="text-sm font-medium" htmlFor="scoring-mode">
+            Scoring mode
           </label>
-          <label className="flex items-start gap-2 cursor-pointer text-sm">
-            <input
-              type="radio"
-              name="scoring-mode"
-              className="mt-1"
-              checked={scoringMode === 'ai'}
-              onChange={() => onScoringModeChange('ai')}
-            />
-            <span>
-              <span className="font-medium">AI (if available)</span>
-              <span className="text-muted-foreground"> — server uses OpenAI when configured.</span>
-            </span>
-          </label>
-          <label className="flex items-start gap-2 cursor-pointer text-sm">
-            <input
-              type="radio"
-              name="scoring-mode"
-              className="mt-1"
-              checked={scoringMode === 'mock'}
-              onChange={() => onScoringModeChange('mock')}
-            />
-            <span>
-              <span className="font-medium">Mock only</span>
-              <span className="text-muted-foreground"> — fast, deterministic heuristic on the server.</span>
-            </span>
-          </label>
+          <select
+            id="scoring-mode"
+            value={scoringMode}
+            onChange={(e) => onScoringModeChange(e.target.value as RecordingStepProps['scoringMode'])}
+            className="min-w-[220px] rounded-lg border border-border bg-background px-3 py-2 text-sm"
+          >
+            <option value="ai">AI (if available)</option>
+            <option value="mock">Mock only</option>
+            <option value="demo">Demo (offline)</option>
+          </select>
         </div>
-      </fieldset>
+        <p className="text-xs text-muted-foreground mt-2">
+          AI/Mock use the backend (STT + scoring). Demo uses sample data.
+        </p>
+      </div>
 
       {recorder.error ? (
         <p className="text-destructive mb-4 max-w-lg text-center" role="alert">
@@ -155,8 +126,8 @@ export function RecordingStep({
         ) : null}
       </div>
 
-      <p className="text-muted-foreground mt-1 text-center max-w-md">
-        Tip: If the backend is offline, switch to <strong>Demo (offline)</strong>.
+      <p className="text-muted-foreground mt-1 text-center max-w-md text-xs">
+        If the backend is offline, switch to <strong>Demo (offline)</strong>.
       </p>
     </div>
   )
